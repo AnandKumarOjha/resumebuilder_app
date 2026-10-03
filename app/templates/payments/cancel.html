@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Checkout Cancelled - ResumeBuilder{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="card shadow-sm border-0 p-4">
+            <div class="card-body">
+                <div class="text-warning display-1 mb-3">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <h2 class="fw-bold mb-2">Checkout Cancelled</h2>
+                <p class="text-muted fs-5 mb-4">
+                    Your transaction was cancelled. No charges were made. You can upgrade anytime to unlock unlimited PDF downloads.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('payments.upgrade', role_id=role_id) if role_id else url_for('payments.upgrade') }}" class="btn btn-warning btn-lg shadow-sm">
+                        <i class="bi bi-arrow-repeat me-1"></i> Try Upgrade Again
+                    </a>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary btn-lg">
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

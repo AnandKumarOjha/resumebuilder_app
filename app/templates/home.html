@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}ResumeBuilder - Build Tailored Resumes for Every Job Role{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm border text-center">
+    <div class="container-fluid py-3">
+        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-3 fw-semibold">
+            <i class="bi bi-stars me-1"></i> Multi-Role Resume Platform for Students & Developers
+        </span>
+        <h1 class="display-5 fw-bold text-dark mb-3">One Profile, Multiple Tailored Resumes</h1>
+        <p class="col-md-8 mx-auto fs-5 text-muted mb-4">
+            Stop sending generic resumes. Create and manage dedicated role profiles (Frontend, Backend, Data Analyst, ML Engineer) with targeted experience, skills, and one-click PDF downloads.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-lg px-4 gap-3 shadow-sm">
+                    <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 gap-3 shadow-sm">
+                    <i class="bi bi-rocket-takeoff me-1"></i> Start Building Free
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Features Row -->
+<div class="row g-4 py-3">
+    <div class="col-md-4">
+        <div class="card h-100 p-3 shadow-sm border">
+            <div class="card-body">
+                <div class="text-primary mb-3 fs-2">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
+                <h5 class="card-title fw-bold">Multi-Role Architecture</h5>
+                <p class="card-text text-muted">
+                    Maintain customized summaries, experiences, and skill sets for each specific position you apply to without losing your master profile.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 p-3 shadow-sm border">
+            <div class="card-body">
+                <div class="text-success mb-3 fs-2">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                </div>
+                <h5 class="card-title fw-bold">Instant PDF Generation</h5>
+                <p class="card-text text-muted">
+                    Generate pixel-perfect, ATS-compatible A4 PDF resumes using dedicated print stylesheets designed to pass applicant tracking systems.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 p-3 shadow-sm border">
+            <div class="card-body">
+                <div class="text-warning mb-3 fs-2">
+                    <i class="bi bi-gem"></i>
+                </div>
+                <h5 class="card-title fw-bold">PRO Paywall & Stripe</h5>
+                <p class="card-text text-muted">
+                    Integrated monetization flow with Stripe checkout, automatic webhooks, and instant premium access unlock.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

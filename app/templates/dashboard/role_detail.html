@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{{ role.role_name }} Details - Resume Builder{% endblock %}
+
+{% block content %}
+<!-- Top Header & Navigation -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 border-bottom pb-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ role.role_name }}</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">Role: <span class="text-primary">{{ role.role_name }}</span></h2>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="{{ url_for('dashboard.edit_role', role_id=role.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil me-1"></i> Edit Role Details
+        </a>
+        <a href="{{ url_for('resume.preview_resume', role_id=role.id) }}" class="btn btn-outline-primary" target="_blank">
+            <i class="bi bi-eye me-1"></i> Preview Resume
+        </a>
+        <div class="btn-group">
+            <a href="{{ url_for('resume.download_pdf', role_id=role.id) }}" class="btn btn-danger shadow-sm">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download PDF
+            </a>
+            <button type="button" class="btn btn-danger dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><h6 class="dropdown-header">Choose PDF Template</h6></li>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('resume.download_pdf', role_id=role.id, template='simple') }}">
+                        <i class="bi bi-file-text me-2"></i> Simple ATS Template (Default)
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{{ url_for('resume.download_pdf', role_id=role.id, template='modern') }}">
+                        <i class="bi bi-layout-text-sidebar-reverse me-2"></i> Modern Professional Template
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Personal info check notification -->
+{% if not personal_info %}
+    <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4 shadow-sm" role="alert">
+        <div>
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <strong>Personal Information is missing!</strong> Your contact details (phone, email, LinkedIn, location) will not appear on the resume until you complete your personal info.
+        </div>
+        <a href="{{ url_for('dashboard.personal_info') }}" class="btn btn-warning btn-sm text-nowrap ms-3">
+            Fill Personal Info
+        </a>
+    </div>
+{% endif %}
+
+<!-- Professional Summary -->
+<div class="card shadow-sm mb-4 border">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-card-text me-2 text-primary"></i> Professional Summary</h5>
+        <a href="{{ url_for('dashboard.edit_role', role_id=role.id) }}" class="btn btn-sm btn-link text-decoration-none">Edit</a>
+    </div>
+    <div class="card-body">
+        {% if role.summary %}
+            <p class="mb-0 text-secondary" style="white-space: pre-line;">{{ role.summary }}</p>
+        {% else %}
+            <p class="text-muted mb-0 fst-italic">No professional summary provided. Add a brief summary highlighting your strengths for this role.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Work Experience Section -->
+<div class="card shadow-sm mb-4 border">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-briefcase me-2 text-primary"></i> Work Experience</h5>
+        <a href="{{ url_for('dashboard.add_experience', role_id=role.id) }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Add Experience
+        </a>
+    </div>
+    <div class="card-body">
+        {% if role.experiences %}
+            <div class="list-group list-group-flush">
+                {% for exp in role.experiences %}
+                    <div class="list-group-item px-0 py-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark">{{ exp.job_title }}</h6>
+                                <span class="text-primary fw-medium">{{ exp.company }}</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-secondary border">{{ exp.start_date }} - {{ exp.end_date }}</span>
+                                <div class="mt-1">
+                                    <a href="{{ url_for('dashboard.edit_experience', exp_id=exp.id) }}" class="btn btn-sm btn-link text-primary p-0 me-2 text-decoration-none">Edit</a>
+                                    <form action="{{ url_for('dashboard.delete_experience', exp_id=exp.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this experience?');">
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mb-0 text-secondary small" style="white-space: pre-line;">{{ exp.description }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-briefcase fs-3 d-block mb-2"></i>
+                <p class="mb-2">No work experience entries added yet for this role.</p>
+                <a href="{{ url_for('dashboard.add_experience', role_id=role.id) }}" class="btn btn-sm btn-outline-primary">+ Add First Experience</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Education Section -->
+<div class="card shadow-sm mb-4 border">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-mortarboard me-2 text-primary"></i> Education</h5>
+        <a href="{{ url_for('dashboard.add_education', role_id=role.id) }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Add Education
+        </a>
+    </div>
+    <div class="card-body">
+        {% if role.educations %}
+            <div class="list-group list-group-flush">
+                {% for edu in role.educations %}
+                    <div class="list-group-item px-0 py-3 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-0 fw-bold text-dark">{{ edu.degree }}</h6>
+                                <span class="text-secondary">{{ edu.institution }}</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-light text-secondary border">{{ edu.start_date }} - {{ edu.end_date }}</span>
+                                <div class="mt-1">
+                                    <a href="{{ url_for('dashboard.edit_education', edu_id=edu.id) }}" class="btn btn-sm btn-link text-primary p-0 me-2 text-decoration-none">Edit</a>
+                                    <form action="{{ url_for('dashboard.delete_education', edu_id=edu.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this education entry?');">
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0 text-decoration-none">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-mortarboard fs-3 d-block mb-2"></i>
+                <p class="mb-2">No education entries added yet.</p>
+                <a href="{{ url_for('dashboard.add_education', role_id=role.id) }}" class="btn btn-sm btn-outline-primary">+ Add Education</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Skills Section -->
+<div class="card shadow-sm mb-4 border">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0 fw-semibold"><i class="bi bi-tools me-2 text-primary"></i> Role-Specific Skills</h5>
+        <a href="{{ url_for('dashboard.add_skill', role_id=role.id) }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Add Skill
+        </a>
+    </div>
+    <div class="card-body">
+        {% if role.skills %}
+            <div class="d-flex flex-wrap gap-2">
+                {% for skill in role.skills %}
+                    <span class="badge bg-light text-dark border p-2 d-inline-flex align-items-center gap-2 fs-6 shadow-sm">
+                        <span>{{ skill.skill_name }}</span>
+                        <form action="{{ url_for('dashboard.delete_skill', skill_id=skill.id) }}" method="POST" class="d-inline m-0">
+                            <button type="submit" class="btn-close btn-sm p-0 m-0" aria-label="Remove skill" style="font-size: 0.65rem;"></button>
+                        </form>
+                    </span>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-tools fs-3 d-block mb-2"></i>
+                <p class="mb-2">No skills added yet for this role profile.</p>
+                <a href="{{ url_for('dashboard.add_skill', role_id=role.id) }}" class="btn btn-sm btn-outline-primary">+ Add First Skill</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

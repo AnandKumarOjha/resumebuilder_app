@@ -1,0 +1,82 @@
+/* General Application Styles */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary-color: #475569;
+    --dark-bg: #0f172a;
+    --card-border: #e2e8f0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+.navbar {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.card {
+    border-color: var(--card-border);
+    border-radius: 0.6rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.badge-premium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+}
+
+/* Resume preview container */
+.resume-preview-sheet {
+    background: #ffffff;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    padding: 20mm;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    body {
+        background: #ffffff;
+    }
+    .resume-preview-sheet {
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        width: 100%;
+    }
+}

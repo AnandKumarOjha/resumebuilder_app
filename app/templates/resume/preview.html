@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Resume Preview - {{ role.role_name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .preview-toolbar {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .resume-paper {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 16mm 20mm;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        box-sizing: border-box;
+    }
+    @media print {
+        body {
+            background: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        nav, footer, .preview-toolbar, .alert {
+            display: none !important;
+        }
+        main {
+            padding: 0 !important;
+        }
+        .container {
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .resume-paper {
+            width: 100% !important;
+            min-height: auto !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Preview Toolbar -->
+<div class="preview-toolbar d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div class="d-flex align-items-center gap-3">
+        <a href="{{ url_for('dashboard.role_detail', role_id=role.id) }}" class="btn btn-outline-secondary btn-sm">
+            &larr; Back to Role Detail
+        </a>
+        <span class="fw-semibold text-dark">
+            Previewing: <span class="text-primary">{{ role.role_name }}</span>
+        </span>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Template Switcher -->
+        <div class="btn-group btn-group-sm">
+            <a href="{{ url_for('resume.preview_resume', role_id=role.id, template='simple') }}" class="btn {% if template_name == 'simple' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Simple ATS
+            </a>
+            <a href="{{ url_for('resume.preview_resume', role_id=role.id, template='modern') }}" class="btn {% if template_name == 'modern' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Modern Pro
+            </a>
+        </div>
+
+        <button onclick="window.print()" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-printer me-1"></i> Print / Save as PDF
+        </button>
+
+        <a href="{{ url_for('resume.download_pdf', role_id=role.id, template=template_name) }}" class="btn btn-danger btn-sm shadow-sm">
+            <i class="bi bi-download me-1"></i> Download PDF
+        </a>
+    </div>
+</div>
+
+<!-- Resume Paper Container -->
+<div class="resume-paper mb-5">
+    {{ resume_html|safe }}
+</div>
+{% endblock %}

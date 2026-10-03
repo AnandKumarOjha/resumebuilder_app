@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful - ResumeBuilder PRO{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-7 text-center">
+        <div class="card shadow-sm border-0 p-4">
+            <div class="card-body">
+                <div class="text-success display-1 mb-3">
+                    <i class="bi bi-patch-check-fill"></i>
+                </div>
+                <h2 class="fw-bold mb-2">Welcome to ResumeBuilder PRO!</h2>
+                <p class="text-muted fs-5 mb-4">
+                    Your payment was successful and your account has been upgraded with lifetime unlimited PDF downloads.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    {% if role_id %}
+                        <a href="{{ url_for('dashboard.role_detail', role_id=role_id) }}" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Return &amp; Download Resume
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-lg shadow-sm">
+                            <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

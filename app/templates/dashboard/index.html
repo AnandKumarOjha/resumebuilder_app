@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Resume Builder{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-1">Student &amp; Professional Dashboard</h2>
+        <p class="text-muted mb-0">Manage your central profile and generate targeted resumes for specific career roles.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('dashboard.create_role') }}" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add New Target Role
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Personal Information Card -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100 border">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="card-title mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-lines-fill"></i> Personal Information
+                </h5>
+                {% if personal_info %}
+                    <span class="badge bg-light text-primary">Complete</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Incomplete</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if personal_info %}
+                    <div class="mb-3">
+                        <h5 class="fw-bold text-dark mb-1">{{ personal_info.first_name }} {{ personal_info.last_name }}</h5>
+                        <p class="text-muted mb-2"><i class="bi bi-envelope me-1"></i> {{ current_user.email }}</p>
+                    </div>
+                    <ul class="list-unstyled mb-4 small text-secondary">
+                        <li class="mb-2"><i class="bi bi-telephone me-2 text-primary"></i> <strong>Phone:</strong> {{ personal_info.phone }}</li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2 text-danger"></i> <strong>Location:</strong> {{ personal_info.address }}</li>
+                        {% if personal_info.linkedin %}
+                            <li class="mb-2"><i class="bi bi-linkedin me-2 text-primary"></i> <strong>LinkedIn:</strong> <a href="{{ personal_info.linkedin }}" target="_blank" class="text-truncate d-inline-block align-bottom" style="max-width: 180px;">{{ personal_info.linkedin }}</a></li>
+                        {% endif %}
+                        {% if personal_info.portfolio %}
+                            <li class="mb-2"><i class="bi bi-globe me-2 text-success"></i> <strong>Portfolio:</strong> <a href="{{ personal_info.portfolio }}" target="_blank" class="text-truncate d-inline-block align-bottom" style="max-width: 180px;">{{ personal_info.portfolio }}</a></li>
+                        {% endif %}
+                    </ul>
+                    <a href="{{ url_for('dashboard.personal_info') }}" class="btn btn-outline-primary w-100 btn-sm">
+                        <i class="bi bi-pencil me-1"></i> Edit Personal Info
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning py-2 small mb-3">
+                        <i class="bi bi-exclamation-triangle me-1"></i> You haven't added your contact details yet. These details will appear on your generated resume header.
+                    </div>
+                    <a href="{{ url_for('dashboard.personal_info') }}" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-lg me-1"></i> Fill Personal Information
+                    </a>
+                {% endif %}
+            </div>
+            <!-- Membership status footer -->
+            <div class="card-footer bg-light border-top py-2">
+                <div class="d-flex justify-content-between align-items-center small">
+                    <span class="text-muted">Account Tier:</span>
+                    {% if current_user.is_premium %}
+                        <span class="badge badge-premium px-2 py-1"><i class="bi bi-star-fill"></i> PRO Unlimited</span>
+                    {% else %}
+                        <span>
+                            <span class="badge bg-secondary">Free Tier</span>
+                            <a href="{{ url_for('payments.upgrade') }}" class="ms-1 text-primary fw-semibold">Upgrade</a>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Roles Section -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm h-100 border">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="card-title mb-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-briefcase"></i> Your Target Job Roles
+                </h5>
+                <span class="badge bg-secondary">{{ roles|length }} {% if roles|length == 1 %}Role{% else %}Roles{% endif %}</span>
+            </div>
+            <div class="card-body">
+                {% if roles %}
+                    <div class="row g-3">
+                        {% for role in roles %}
+                            <div class="col-12">
+                                <div class="card border p-3 bg-light-subtle hover-shadow">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <h5 class="mb-0 fw-bold text-dark">{{ role.role_name }}</h5>
+                                                <span class="badge bg-info-subtle text-info-emphasis border">
+                                                    {{ role.experiences|length }} Exps &middot; {{ role.educations|length }} Edu &middot; {{ role.skills|length }} Skills
+                                                </span>
+                                            </div>
+                                            <p class="text-muted small mb-0 text-truncate" style="max-width: 500px;">
+                                                {{ role.summary or 'No summary provided.' }}
+                                            </p>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <a href="{{ url_for('dashboard.role_detail', role_id=role.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-sliders me-1"></i> Manage
+                                            </a>
+                                            <a href="{{ url_for('resume.preview_resume', role_id=role.id) }}" class="btn btn-sm btn-outline-secondary" title="Preview Resume in Browser">
+                                                <i class="bi bi-eye me-1"></i> Preview
+                                            </a>
+                                            <a href="{{ url_for('resume.download_pdf', role_id=role.id) }}" class="btn btn-sm btn-outline-danger" title="Download PDF Resume">
+                                                <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                                            </a>
+                                            <form action="{{ url_for('dashboard.delete_role', role_id=role.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete the role \'{{ role.role_name }}\' and all its associated items?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Role">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3 text-muted display-4"><i class="bi bi-folder2-open"></i></div>
+                        <h5 class="fw-semibold">No Target Job Roles Added Yet</h5>
+                        <p class="text-muted col-md-8 mx-auto mb-4">
+                            Create custom roles such as <em>Frontend Engineer</em>, <em>Full Stack Developer</em>, or <em>Data Scientist</em> to tailor your experiences, skills, and summary for each application.
+                        </p>
+                        <a href="{{ url_for('dashboard.create_role') }}" class="btn btn-primary px-4">
+                            <i class="bi bi-plus-lg me-1"></i> Create Your First Role
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

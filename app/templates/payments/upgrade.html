@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Upgrade to ResumeBuilder PRO{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-lg-10">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <span class="badge badge-premium px-3 py-2 rounded-pill mb-2 fw-semibold">
+                <i class="bi bi-gem me-1"></i> ResumeBuilder Premium Access
+            </span>
+            <h1 class="display-6 fw-bold">Unlock Unlimited PDF Resume Downloads</h1>
+            <p class="text-muted col-md-8 mx-auto">
+                Land your dream job with professional ATS-compliant resumes customized for every role you apply to.
+            </p>
+        </div>
+
+        {% if current_user.is_premium %}
+            <div class="alert alert-success d-flex align-items-center justify-content-between p-4 mb-5 shadow-sm rounded-3">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-patch-check-fill fs-1 text-success"></i>
+                    <div>
+                        <h4 class="alert-heading mb-1 fw-bold">You are a PRO Member!</h4>
+                        <p class="mb-0 text-secondary">Your account has lifetime access to unlimited PDF downloads and all premium templates.</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    {% if role_id %}
+                        <a href="{{ url_for('dashboard.role_detail', role_id=role_id) }}" class="btn btn-primary">
+                            Back to Role
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">
+                            Go to Dashboard
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Testing Deactivation Controls -->
+            <div class="card border-dashed p-3 text-center bg-light">
+                <small class="text-muted mb-2 d-block">
+                    <i class="bi bi-gear-fill me-1"></i> Testing Controls (Dev Mode): Want to test paywall redirection again?
+                </small>
+                <form action="{{ url_for('payments.dev_deactivate') }}" method="POST">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        Deactivate PRO (Reset to Free)
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <!-- Pricing Cards Comparison -->
+            <div class="row g-4 align-items-stretch mb-5">
+                <!-- Free Tier -->
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm border">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h4 class="fw-bold text-muted mb-2">Free Plan</h4>
+                            <p class="text-muted small mb-4">Great for creating and organizing your role profiles.</p>
+                            <div class="mb-4">
+                                <span class="display-6 fw-bold">$0</span>
+                                <span class="text-muted">/ forever</span>
+                            </div>
+                            <ul class="list-unstyled mb-4 small flex-grow-1">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Unlimited target role profiles</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Work experience &amp; education tracking</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Role-specific skill tagging</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> In-browser resume preview</li>
+                                <li class="mb-2 text-muted"><i class="bi bi-x-circle text-danger me-2"></i> Direct PDF downloads (Paywall locked)</li>
+                            </ul>
+                            <button class="btn btn-outline-secondary w-100 disabled">Current Plan</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRO Tier -->
+                <div class="col-md-6">
+                    <div class="card h-100 shadow border-primary position-relative">
+                        <div class="position-absolute top-0 end-0 m-3">
+                            <span class="badge bg-primary px-3 py-1">MOST POPULAR</span>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h4 class="fw-bold text-primary mb-2">PRO Unlimited</h4>
+                            <p class="text-muted small mb-4">Complete access to high-fidelity PDF exports for applications.</p>
+                            <div class="mb-4">
+                                <span class="display-6 fw-bold text-dark">$9.99</span>
+                                <span class="text-muted">/ one-time lifetime</span>
+                            </div>
+                            <ul class="list-unstyled mb-4 small flex-grow-1">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> <strong>Everything in Free plan</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> <strong>Unlimited ATS PDF Resume Downloads</strong></li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Access to all templates (Simple ATS + Modern)</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Tailored print-ready A4 formatting</li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i> Priority support &amp; lifetime updates</li>
+                            </ul>
+
+                            <!-- Checkout Form -->
+                            <form action="{{ url_for('payments.create_checkout_session') }}" method="POST" class="mb-2">
+                                {% if role_id %}
+                                    <input type="hidden" name="role_id" value="{{ role_id }}">
+                                {% endif %}
+                                <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm">
+                                    <i class="bi bi-credit-card me-1"></i> Upgrade with Stripe ($9.99)
+                                </button>
+                            </form>
+
+                            <!-- Instant Dev Upgrade Option for Testing/Demo -->
+                            <div class="mt-3 text-center border-top pt-3">
+                                <small class="text-muted d-block mb-2">
+                                    <i class="bi bi-lightning-charge text-warning"></i> <strong>Evaluation / Dev Mode:</strong> Test premium without entering credit card details:
+                                </small>
+                                <form action="{{ url_for('payments.dev_activate') }}" method="POST">
+                                    {% if role_id %}
+                                        <input type="hidden" name="role_id" value="{{ role_id }}">
+                                    {% endif %}
+                                    <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                        <i class="bi bi-check-circle me-1"></i> Activate PRO Instantly (1-Click Test)
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

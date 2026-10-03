@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ personal_info.first_name if personal_info else 'Resume' }} {{ personal_info.last_name if personal_info else '' }} - {{ role.role_name }}</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm 15mm 12mm 15mm;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #1f2937;
+            background-color: #ffffff;
+            line-height: 1.45;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #f8fafc;
+            border-left: 5px solid #2563eb;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+        }
+        .candidate-name {
+            font-size: 22pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin: 0 0 2px 0;
+            letter-spacing: -0.5px;
+        }
+        .target-role {
+            font-size: 13pt;
+            font-weight: 600;
+            color: #2563eb;
+            margin: 0 0 6px 0;
+        }
+        .contact-info {
+            font-size: 9pt;
+            color: #4b5563;
+        }
+        .contact-info a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .section {
+            margin-bottom: 14px;
+        }
+        .section-heading {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1e3a8a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 3px;
+            margin-bottom: 8px;
+        }
+        .summary-text {
+            font-size: 9.5pt;
+            color: #374151;
+            text-align: justify;
+            margin: 0;
+            line-height: 1.45;
+        }
+        table.entry-header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2px;
+        }
+        table.entry-header-table td {
+            padding: 0;
+            vertical-align: top;
+        }
+        .entry-title {
+            font-size: 10pt;
+            font-weight: bold;
+            color: #111827;
+        }
+        .entry-company {
+            font-size: 9.5pt;
+            font-weight: 600;
+            color: #2563eb;
+        }
+        .entry-dates {
+            font-size: 9pt;
+            color: #6b7280;
+            text-align: right;
+            font-style: italic;
+        }
+        .entry-desc {
+            font-size: 9pt;
+            color: #374151;
+            margin-top: 3px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .skills-container {
+            font-size: 9.5pt;
+        }
+        .skill-item {
+            display: inline-block;
+            background-color: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            padding: 3px 8px;
+            margin: 2px 4px 2px 0;
+            font-size: 8.5pt;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="candidate-name">
+                {% if personal_info %}
+                    {{ personal_info.first_name }} {{ personal_info.last_name }}
+                {% else %}
+                    Candidate Name
+                {% endif %}
+            </h1>
+            <div class="target-role">{{ role.role_name }}</div>
+            <div class="contact-info">
+                {% if personal_info %}
+                    <span>{{ user.email }}</span>
+                    {% if personal_info.phone %} &bull; <span>{{ personal_info.phone }}</span>{% endif %}
+                    {% if personal_info.address %} &bull; <span>{{ personal_info.address }}</span>{% endif %}
+                    {% if personal_info.linkedin %} &bull; <span>{{ personal_info.linkedin }}</span>{% endif %}
+                    {% if personal_info.portfolio %} &bull; <span>{{ personal_info.portfolio }}</span>{% endif %}
+                {% else %}
+                    <span>{{ user.email }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Summary -->
+        {% if role.summary %}
+        <div class="section">
+            <div class="section-heading">Executive Summary</div>
+            <p class="summary-text">{{ role.summary }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Work Experience -->
+        {% if role.experiences %}
+        <div class="section">
+            <div class="section-heading">Professional Experience</div>
+            {% for exp in role.experiences %}
+                <table class="entry-header-table">
+                    <tr>
+                        <td style="text-align: left;">
+                            <span class="entry-title">{{ exp.job_title }}</span> &mdash; <span class="entry-company">{{ exp.company }}</span>
+                        </td>
+                        <td style="text-align: right; width: 140px;" class="entry-dates">
+                            {{ exp.start_date }} &ndash; {{ exp.end_date }}
+                        </td>
+                    </tr>
+                </table>
+                <div class="entry-desc">{{ exp.description }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Education -->
+        {% if role.educations %}
+        <div class="section">
+            <div class="section-heading">Education &amp; Credentials</div>
+            {% for edu in role.educations %}
+                <table class="entry-header-table">
+                    <tr>
+                        <td style="text-align: left;">
+                            <span class="entry-title">{{ edu.degree }}</span> &mdash; <span class="entry-company">{{ edu.institution }}</span>
+                        </td>
+                        <td style="text-align: right; width: 140px;" class="entry-dates">
+                            {{ edu.start_date }} &ndash; {{ edu.end_date }}
+                        </td>
+                    </tr>
+                </table>
+                <div style="height: 4px;"></div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Skills -->
+        {% if role.skills %}
+        <div class="section">
+            <div class="section-heading">Core Competencies &amp; Technical Skills</div>
+            <div class="skills-container">
+                {% for skill in role.skills %}
+                    <span class="skill-item">{{ skill.skill_name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
