@@ -1,5 +1,37 @@
+# Virtual environment
 venv/
-*.pyc
+env/
+.venv/
+
+# Python
 __pycache__/
-instance/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment variables
 .env
+
+# Database files
+*.db
+*.sqlite3
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
