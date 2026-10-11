@@ -1,50 +1,155 @@
-{% extends "base.html" %}
-{% block title %}Login - Resume Builder{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}Log In - ResumeBuilder{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="text-center mb-4">Log In</h2>
-                <form method="POST" action="">
-                    {{ form.hidden_tag() }}
-                    
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-label") }}
-                        {% if form.email.errors %}
-                            {{ form.email(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.email(class="form-control") }}
-                        {% endif %}
-                    </div>
+<div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+    <!-- Background accents from Stitch 3 -->
+    <div class="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 -right-20 w-80 h-80 rounded-full bg-slate-200/50 blur-2xl pointer-events-none"></div>
 
-                    <div class="mb-4">
-                        {{ form.password.label(class="form-label") }}
-                        {% if form.password.errors %}
-                            {{ form.password(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}<span>{{ error }}</span>{% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.password(class="form-control") }}
-                        {% endif %}
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary btn-lg") }}
-                    </div>
-                </form>
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        Need an account? <a href="{{ url_for('auth.register') }}">Register Now</a>
-                    </small>
+    <div class="w-full max-w-[480px] z-10">
+        <!-- Main Auth Card -->
+        <div class="bg-white shadow-xl rounded-2xl p-6 sm:p-8 flex flex-col border border-slate-100">
+            <!-- Brand & Context Header -->
+            <div class="flex flex-col items-center text-center space-y-2 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                    <span class="material-symbols-outlined text-[28px]">description</span>
                 </div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Sign In / Log In to ResumeBuilder</h1>
+                <p class="text-sm text-slate-500 max-w-[340px]">
+                    Welcome back! Manage your targeted job resumes.
+                </p>
+            </div>
+
+            <!-- Segmented Tab Switcher (Stitch 3) -->
+            <div class="flex p-1 bg-slate-100 rounded-xl mb-6">
+                <a href="{{ url_for('auth.login') }}" class="flex-1 py-2 text-center text-sm font-semibold rounded-lg bg-white text-slate-900 shadow-sm transition-all">
+                    Sign In
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="flex-1 py-2 text-center text-sm font-medium rounded-lg text-slate-500 hover:text-slate-900 transition-all">
+                    Create Account
+                </a>
+            </div>
+
+            <!-- Auth Form -->
+            <form action="{{ url_for('auth.login') }}" method="POST" class="flex flex-col space-y-4" id="loginForm">
+                {{ form.hidden_tag() }}
+
+                <!-- Email Field -->
+                <div class="flex flex-col space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-600" for="email">
+                        Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <span id="email-icon" class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[20px] pointer-events-none transition-opacity duration-200">mail</span>
+                        {% set email_err = 'border-red-400 ring-1 ring-red-400' if form.email.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                        <input class="w-full h-11 pl-11 pr-4 bg-white rounded-lg text-slate-900 text-sm border {{ email_err }} placeholder:text-slate-400 focus:outline-none transition-all shadow-sm"
+                               id="email" 
+                               name="email" 
+                               type="email" 
+                               placeholder="name@example.com" 
+                               required 
+                               value="{{ form.email.data or '' }}"
+                               oninput="updateIcon(this, 'email-icon')"
+                               onchange="updateIcon(this, 'email-icon')">
+                    </div>
+                    {% if form.email.errors %}
+                        <p class="text-xs text-red-500 mt-1">{% for err in form.email.errors %}{{ err }} {% endfor %}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field -->
+                <div class="flex flex-col space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-semibold uppercase tracking-wider text-slate-600" for="password">
+                            Password <span class="text-red-500">*</span>
+                        </label>
+                    </div>
+                    <div class="relative flex items-center">
+                        <span id="password-icon" class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[20px] pointer-events-none transition-opacity duration-200">lock</span>
+                        {% set pwd_err = 'border-red-400 ring-1 ring-red-400' if form.password.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                        <input class="w-full h-11 pl-11 pr-11 bg-white rounded-lg text-slate-900 text-sm border {{ pwd_err }} placeholder:text-slate-400 focus:outline-none transition-all shadow-sm"
+                               id="password" 
+                               name="password" 
+                               type="password" 
+                               placeholder="••••••••" 
+                               required
+                               oninput="updateIcon(this, 'password-icon')"
+                               onchange="updateIcon(this, 'password-icon')">
+                        <button type="button" id="togglePassword" class="absolute right-3.5 text-slate-400 hover:text-slate-600 focus:outline-none flex items-center justify-center p-0.5" aria-label="Toggle password visibility">
+                            <span class="material-symbols-outlined text-[20px]" id="eyeIcon">visibility</span>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <p class="text-xs text-red-500 mt-1">{% for err in form.password.errors %}{{ err }} {% endfor %}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center space-x-2 mt-2 cursor-pointer active:scale-[0.99]">
+                    <span>Sign In</span>
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+            </form>
+
+            <!-- Dynamic Context Switcher Footer -->
+            <div class="text-center pt-5 border-t border-slate-100 mt-5">
+                <p class="text-xs text-slate-500">
+                    Don't have an account? 
+                    <a href="{{ url_for('auth.register') }}" class="text-blue-600 font-semibold hover:underline ml-1">Create Account for free</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Trust Badges & ATS Assurance Notice (Stitch 3) -->
+        <div class="mt-6 flex items-center justify-center space-x-4 text-slate-500 text-xs">
+            <div class="flex items-center space-x-1">
+                <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified_user</span>
+                <span>Bank-grade 256-bit encryption</span>
+            </div>
+            <div class="h-3 w-px bg-slate-300"></div>
+            <div class="flex items-center space-x-1">
+                <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
+                <span>ATS Standard Compliance</span>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Vanishing icon logic: When user enters Email or Password, background icon is removed!
+    function updateIcon(input, iconId) {
+        const icon = document.getElementById(iconId);
+        if (!icon) return;
+        if (input.value && input.value.trim().length > 0) {
+            icon.style.opacity = '0';
+            icon.style.visibility = 'hidden';
+            input.style.paddingLeft = '0.875rem';
+        } else {
+            icon.style.opacity = '1';
+            icon.style.visibility = 'visible';
+            input.style.paddingLeft = '2.75rem';
+        }
+    }
+
+    // Toggle password visibility
+    document.addEventListener('DOMContentLoaded', function() {
+        const emailInput = document.getElementById('email');
+        const pwdInput = document.getElementById('password');
+        const toggleBtn = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        if (emailInput) updateIcon(emailInput, 'email-icon');
+        if (pwdInput) updateIcon(pwdInput, 'password-icon');
+
+        if (toggleBtn && pwdInput && eyeIcon) {
+            toggleBtn.addEventListener('click', function() {
+                const isPassword = pwdInput.getAttribute('type') === 'password';
+                pwdInput.setAttribute('type', isPassword ? 'text' : 'password');
+                eyeIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -1,72 +1,158 @@
-{% extends "base.html" %}
-{% block title %}ResumeBuilder - Build Tailored Resumes for Every Job Role{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}ResumeBuilder - One Profile, Multiple Tailored Resumes{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="p-5 mb-4 bg-white rounded-3 shadow-sm border text-center">
-    <div class="container-fluid py-3">
-        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill mb-3 fw-semibold">
-            <i class="bi bi-stars me-1"></i> Multi-Role Resume Platform for Students & Developers
-        </span>
-        <h1 class="display-5 fw-bold text-dark mb-3">One Profile, Multiple Tailored Resumes</h1>
-        <p class="col-md-8 mx-auto fs-5 text-muted mb-4">
-            Stop sending generic resumes. Create and manage dedicated role profiles (Frontend, Backend, Data Analyst, ML Engineer) with targeted experience, skills, and one-click PDF downloads.
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-lg px-4 gap-3 shadow-sm">
-                    <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+<div class="flex flex-col w-full">
+    <!-- Subtle Ambient Glow -->
+    <div class="relative w-full overflow-hidden">
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[340px] bg-blue-500/10 rounded-full blur-[110px] pointer-events-none"></div>
+        <div class="absolute top-64 right-10 w-[380px] h-[280px] bg-indigo-500/10 rounded-full blur-[90px] pointer-events-none"></div>
+        
+        <!-- Hero Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 flex flex-col items-center text-center relative z-10">
+            <!-- Pill Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 font-medium text-sm shadow-sm mb-6 transition-transform hover:scale-105 border border-blue-100">
+                <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+                <span>Multi-Role Resume Platform for Students &amp; Developers</span>
+            </div>
+            
+            <!-- Main Headline -->
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 max-w-4xl tracking-tight mb-6 leading-tight">
+                One Profile, Multiple Tailored Resumes
+            </h1>
+            
+            <!-- Subtitle Description -->
+            <p class="text-lg sm:text-xl text-slate-600 max-w-3xl mb-10 leading-relaxed">
+                Create target-specific resumes for different job postings without starting from scratch. Tailor skills, work summaries, and achievements for software engineers, product managers, or data analysts — and export ATS-friendly PDFs in seconds.
+            </p>
+            
+            <!-- Dual Call to Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center gap-4 justify-center w-full max-w-md mb-12">
+                <a href="{{ url_for('auth.register') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 text-white font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all">
+                    <span>Start Building Free</span>
+                    <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
                 </a>
-            {% else %}
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 gap-3 shadow-sm">
-                    <i class="bi bi-rocket-takeoff me-1"></i> Start Building Free
+                <a href="{{ url_for('auth.login') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-white text-slate-700 font-semibold shadow-sm hover:bg-slate-50 border border-slate-200 transition-colors">
+                    Log In
                 </a>
-                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-4">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Log In
-                </a>
-            {% endif %}
+            </div>
+            
+            <!-- Metric Strip -->
+            <div class="inline-flex flex-wrap items-center justify-center gap-y-2 gap-x-6 px-6 py-2.5 rounded-full bg-white shadow-sm border border-slate-100 text-slate-600 text-xs sm:text-sm font-medium">
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px] text-blue-600">verified</span>
+                    <span>ATS Optimized Structure</span>
+                </div>
+                <span class="hidden sm:inline text-slate-300">•</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px] text-red-500">picture_as_pdf</span>
+                    <span>Instant WeasyPrint PDF</span>
+                </div>
+                <span class="hidden sm:inline text-slate-300">•</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px] text-emerald-600">layers</span>
+                    <span>Multi-Role Profiles</span>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Features Row -->
-<div class="row g-4 py-3">
-    <div class="col-md-4">
-        <div class="card h-100 p-3 shadow-sm border">
-            <div class="card-body">
-                <div class="text-primary mb-3 fs-2">
-                    <i class="bi bi-briefcase-fill"></i>
+    <!-- Role Showcase & Visual Grid Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+                <span class="text-xs font-bold text-blue-600 tracking-widest uppercase">Smart Architecture</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mt-1">Built for the Modern Job Market</h2>
+            </div>
+            <p class="text-slate-600 text-sm sm:text-base max-w-md">
+                Switching career tracks or applying across varying tech stacks? Manage multiple versions with single-source master data integrity.
+            </p>
+        </div>
+
+        <!-- 3 Core Feature Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Multi-Role Architecture -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div>
+                    <div class="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6 text-blue-600">
+                        <span class="material-symbols-outlined text-[32px]">work</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">
+                        Multi-Role Architecture
+                    </h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Manage role-specific professional summaries, target titles, and tailored skillsets linked to your master profile seamlessly.
+                    </p>
                 </div>
-                <h5 class="card-title fw-bold">Multi-Role Architecture</h5>
-                <p class="card-text text-muted">
-                    Maintain customized summaries, experiences, and skill sets for each specific position you apply to without losing your master profile.
-                </p>
+                <a href="{{ url_for('auth.register') }}" class="inline-flex items-center gap-1 text-blue-600 font-semibold text-sm hover:underline">
+                    <span>Get started</span>
+                    <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                </a>
+            </div>
+
+            <!-- Card 2: Instant PDF Generation -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div>
+                    <div class="w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center mb-6 text-red-500">
+                        <span class="material-symbols-outlined text-[32px]">picture_as_pdf</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">
+                        Instant PDF Generation
+                    </h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Generate pixel-perfect ATS-compatible A4 PDF downloads powered by server-side WeasyPrint with zero formatting glitches.
+                    </p>
+                </div>
+                <a href="{{ url_for('auth.register') }}" class="inline-flex items-center gap-1 text-red-500 font-semibold text-sm hover:underline">
+                    <span>Explore templates</span>
+                    <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                </a>
+            </div>
+
+            <!-- Card 3: PRO Paywall & Stripe -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 flex flex-col justify-between hover:shadow-md transition-shadow">
+                <div>
+                    <div class="w-14 h-14 rounded-xl bg-amber-50 flex items-center justify-center mb-6 text-amber-500">
+                        <span class="material-symbols-outlined text-[32px]">diamond</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">
+                        PRO Paywall &amp; Stripe
+                    </h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-6">
+                        Monetize with lifetime single-checkout Stripe payments, unlocking unlimited role profiles and premium ATS templates.
+                    </p>
+                </div>
+                <a href="{{ url_for('payments.upgrade') }}" class="inline-flex items-center gap-1 text-amber-600 font-semibold text-sm hover:underline">
+                    <span>Upgrade to PRO</span>
+                    <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                </a>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card h-100 p-3 shadow-sm border">
-            <div class="card-body">
-                <div class="text-success mb-3 fs-2">
-                    <i class="bi bi-file-earmark-pdf-fill"></i>
-                </div>
-                <h5 class="card-title fw-bold">Instant PDF Generation</h5>
-                <p class="card-text text-muted">
-                    Generate pixel-perfect, ATS-compatible A4 PDF resumes using dedicated print stylesheets designed to pass applicant tracking systems.
+
+    <!-- Bottom CTA Banner Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 w-full">
+        <div class="bg-[#121824] rounded-2xl p-8 sm:p-12 text-white flex flex-col lg:flex-row items-center justify-between gap-8 shadow-xl relative overflow-hidden">
+            <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="max-w-2xl relative z-10 text-center lg:text-left">
+                <span class="inline-flex items-center gap-1 text-xs text-amber-300 mb-2 uppercase tracking-widest font-semibold">
+                    <span class="material-symbols-outlined text-[14px]">bolt</span> Quick Start
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                    Stop Rewriting Resumes from Scratch
+                </h2>
+                <p class="text-slate-300 text-sm sm:text-base">
+                    Join thousands of engineering students and career switchers managing hyper-tailored resumes in one unified dashboard.
                 </p>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 p-3 shadow-sm border">
-            <div class="card-body">
-                <div class="text-warning mb-3 fs-2">
-                    <i class="bi bi-gem"></i>
-                </div>
-                <h5 class="card-title fw-bold">PRO Paywall & Stripe</h5>
-                <p class="card-text text-muted">
-                    Integrated monetization flow with Stripe checkout, automatic webhooks, and instant premium access unlock.
-                </p>
+            <div class="flex flex-col sm:flex-row items-center gap-4 relative z-10 w-full sm:w-auto">
+                <a href="{{ url_for('auth.register') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors shadow-sm">
+                    Get Started Now
+                </a>
+                <a href="{{ url_for('payments.upgrade') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold transition-colors">
+                    View Pricing
+                </a>
             </div>
         </div>
     </div>

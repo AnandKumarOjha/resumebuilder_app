@@ -1,35 +1,68 @@
-{% extends "base.html" %}
-{% block title %}{{ title }} - Resume Builder{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - ResumeBuilder{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">{{ title }}</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    
-                    {% for field in form if field.name != 'csrf_token' and field.name != 'submit' %}
-                        <div class="mb-3">
-                            {{ field.label(class="form-label") }}
-                            {% if field.type == 'TextAreaField' %}
-                                {{ field(class="form-control", rows="4") }}
-                            {% else %}
-                                {{ field(class="form-control") }}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
-                        {{ form.submit(class="btn btn-success") }}
-                    </div>
-                </form>
+<div class="max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <!-- Main Form Card -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Card Header Banner -->
+        <div class="bg-blue-600 px-6 sm:px-8 py-5 border-b border-blue-700/40 text-white flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shadow-inner">
+                    <span class="material-symbols-outlined text-[24px]">edit_note</span>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">{{ title }}</h1>
+                    <p class="text-xs text-blue-100 mt-0.5">Enter details to enrich your role credentials.</p>
+                </div>
             </div>
         </div>
-    </div>
+
+        <!-- Form Body -->
+        <form method="POST" class="p-6 sm:p-8 space-y-5">
+            {{ form.hidden_tag() }}
+
+            {% for field in form if field.name != 'csrf_token' and field.name != 'submit' %}
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-700" for="{{ field.id }}">
+                        {{ field.label.text }} <span class="text-red-500">*</span>
+                    </label>
+                    
+                    {% set err_cls = 'border-red-400 ring-1 ring-red-400' if field.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                    {% if field.type == 'TextAreaField' %}
+                        <textarea class="w-full rounded-lg bg-slate-50 text-slate-900 text-sm border {{ err_cls }} p-4 focus:bg-white focus:outline-none transition-all shadow-sm"
+                                  id="{{ field.id }}" 
+                                  name="{{ field.name }}" 
+                                  rows="4" 
+                                  required>{{ field.data or '' }}</textarea>
+                    {% else %}
+                        <input class="w-full h-11 px-4 rounded-lg bg-slate-50 text-slate-900 text-sm border {{ err_cls }} focus:bg-white focus:outline-none transition-all shadow-sm"
+                               id="{{ field.id }}" 
+                               name="{{ field.name }}" 
+                               required 
+                               type="text" 
+                               value="{{ field.data or '' }}">
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <p class="text-xs text-red-500 mt-1">{% for err in field.errors %}{{ err }} {% endfor %}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <!-- Form Action Buttons -->
+            <div class="pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
+                <a href="javascript:history.back()" class="px-6 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm flex items-center justify-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Back</span>
+                </a>
+                <button type="submit" class="px-7 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">check</span>
+                    <span>Save Entry</span>
+                </button>
+            </div>
+        </form>
+    </section>
 </div>
 {% endblock %}

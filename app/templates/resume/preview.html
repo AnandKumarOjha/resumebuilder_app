@@ -1,90 +1,148 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block title %}Resume Preview - {{ role.role_name }}{% endblock %}
 
 {% block extra_head %}
 <style>
-    .preview-toolbar {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 12px 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    }
-    .resume-paper {
-        background: #ffffff;
-        width: 210mm;
-        min-height: 297mm;
-        margin: 0 auto;
-        padding: 16mm 20mm;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border: 1px solid #e2e8f0;
-        box-sizing: border-box;
-    }
     @media print {
         body {
             background: #ffffff !important;
             padding: 0 !important;
             margin: 0 !important;
         }
-        nav, footer, .preview-toolbar, .alert {
+        header, footer, .preview-toolbar, .context-bar {
             display: none !important;
         }
         main {
             padding: 0 !important;
-        }
-        .container {
-            max-width: 100% !important;
-            padding: 0 !important;
             margin: 0 !important;
         }
-        .resume-paper {
-            width: 100% !important;
-            min-height: auto !important;
+        #paperWrapper {
+            transform: none !important;
+        }
+        #a4Document {
             box-shadow: none !important;
             border: none !important;
             padding: 0 !important;
             margin: 0 !important;
+            width: 100% !important;
+            min-height: auto !important;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Preview Toolbar -->
-<div class="preview-toolbar d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-    <div class="d-flex align-items-center gap-3">
-        <a href="{{ url_for('dashboard.role_detail', role_id=role.id) }}" class="btn btn-outline-secondary btn-sm">
-            &larr; Back to Role Detail
-        </a>
-        <span class="fw-semibold text-dark">
-            Previewing: <span class="text-primary">{{ role.role_name }}</span>
-        </span>
-    </div>
-    
-    <div class="d-flex align-items-center gap-2 flex-wrap">
-        <!-- Template Switcher -->
-        <div class="btn-group btn-group-sm">
-            <a href="{{ url_for('resume.preview_resume', role_id=role.id, template='simple') }}" class="btn {% if template_name == 'simple' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                Simple ATS
-            </a>
-            <a href="{{ url_for('resume.preview_resume', role_id=role.id, template='modern') }}" class="btn {% if template_name == 'modern' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                Modern Pro
-            </a>
+<div class="flex flex-col w-full flex-grow">
+    <!-- Sticky Context Toolbar (Stitch 3) -->
+    <div class="sticky top-16 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs preview-toolbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap lg:flex-nowrap items-center justify-between gap-3">
+            
+            <!-- Left: Back link and Title -->
+            <div class="flex items-center gap-3 min-w-0">
+                <a href="{{ url_for('dashboard.role_detail', role_id=role.id) }}" class="inline-flex items-center gap-1 text-slate-600 hover:text-blue-600 font-medium text-xs sm:text-sm transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Role Detail</span>
+                </a>
+                <span class="text-slate-300">|</span>
+                <span class="font-bold text-slate-800 text-sm truncate">
+                    Preview: <span class="text-blue-600">{{ role.role_name }}</span>
+                </span>
+                <span class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">
+                    <span class="material-symbols-outlined text-[14px]">verified</span>
+                    <span>ATS Optimized</span>
+                </span>
+            </div>
+
+            <!-- Middle: Template Switcher & Zoom Controls -->
+            <div class="flex items-center gap-2.5">
+                <!-- Template Switcher Buttons -->
+                <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs font-semibold">
+                    <a href="{{ url_for('resume.preview_resume', role_id=role.id, template='simple') }}" 
+                       class="px-3 py-1 rounded-md transition-all {{ 'bg-blue-600 text-white shadow-xs' if template_name == 'simple' else 'text-slate-600 hover:text-slate-900' }}">
+                        Simple ATS
+                    </a>
+                    <a href="{{ url_for('resume.preview_resume', role_id=role.id, template='modern') }}" 
+                       class="px-3 py-1 rounded-md transition-all {{ 'bg-blue-600 text-white shadow-xs' if template_name == 'modern' else 'text-slate-600 hover:text-slate-900' }}">
+                        Modern Pro
+                    </a>
+                </div>
+
+                <!-- Zoom Controls -->
+                <div class="flex items-center gap-1 bg-slate-100 px-1.5 py-0.5 rounded-full border border-slate-200">
+                    <button class="p-1 rounded-full hover:bg-slate-200 text-slate-700 transition-colors flex items-center justify-center" id="zoomOutBtn" title="Zoom Out">
+                        <span class="material-symbols-outlined text-[16px]">remove</span>
+                    </button>
+                    <span class="font-mono text-xs text-slate-700 px-1.5 min-w-[42px] text-center select-none" id="zoomLevelDisplay">100%</span>
+                    <button class="p-1 rounded-full hover:bg-slate-200 text-slate-700 transition-colors flex items-center justify-center" id="zoomInBtn" title="Zoom In">
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="flex items-center gap-2 justify-end">
+                <button onclick="window.print()" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium transition-all shadow-xs" title="Print Resume">
+                    <span class="material-symbols-outlined text-[16px]">print</span>
+                    <span>Print</span>
+                </button>
+                
+                <a href="{{ url_for('resume.download_pdf', role_id=role.id, template=template_name) }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-all">
+                    <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                    <span>Download PDF</span>
+                </a>
+            </div>
         </div>
+    </div>
 
-        <button onclick="window.print()" class="btn btn-outline-dark btn-sm">
-            <i class="bi bi-printer me-1"></i> Print / Save as PDF
-        </button>
-
-        <a href="{{ url_for('resume.download_pdf', role_id=role.id, template=template_name) }}" class="btn btn-danger btn-sm shadow-sm">
-            <i class="bi bi-download me-1"></i> Download PDF
-        </a>
+    <!-- Drafting Board Studio Canvas (Stitch 3) -->
+    <div class="w-full bg-slate-100/80 py-10 px-4 sm:px-6 lg:px-8 flex justify-center items-start flex-grow overflow-x-auto relative">
+        <!-- Paper Sheet Container with Interactive Scale Transition -->
+        <div class="relative transition-transform duration-200 ease-out origin-top flex flex-col items-center" id="paperWrapper">
+            <!-- A4 Document Sheet -->
+            <article class="w-[794px] min-h-[1123px] bg-white shadow-2xl rounded-none p-12 sm:p-14 flex flex-col text-slate-900 border border-slate-200" id="a4Document">
+                {{ resume_html|safe }}
+            </article>
+        </div>
     </div>
 </div>
 
-<!-- Resume Paper Container -->
-<div class="resume-paper mb-5">
-    {{ resume_html|safe }}
-</div>
+<script>
+    (function() {
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const zoomDisplay = document.getElementById('zoomLevelDisplay');
+        const paperWrapper = document.getElementById('paperWrapper');
+
+        let currentZoom = 1.0;
+        const minZoom = 0.6;
+        const maxZoom = 1.4;
+        const zoomStep = 0.1;
+
+        function updateZoom() {
+            if (paperWrapper && zoomDisplay) {
+                paperWrapper.style.transform = `scale(${currentZoom})`;
+                zoomDisplay.textContent = `${Math.round(currentZoom * 100)}%`;
+            }
+        }
+
+        if (zoomInBtn) {
+            zoomInBtn.addEventListener('click', function() {
+                if (currentZoom < maxZoom) {
+                    currentZoom += zoomStep;
+                    updateZoom();
+                }
+            });
+        }
+
+        if (zoomOutBtn) {
+            zoomOutBtn.addEventListener('click', function() {
+                if (currentZoom > minZoom) {
+                    currentZoom -= zoomStep;
+                    updateZoom();
+                }
+            });
+        }
+    })();
+</script>
 {% endblock %}

@@ -1,31 +1,120 @@
-{% extends "base.html" %}
-{% block title %}{{ title }} - Resume Builder{% endblock %}
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - ResumeBuilder{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">
-                <h4 class="mb-0">{{ title }}</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.role_name.label(class="form-label") }}
-                        {{ form.role_name(class="form-control") }}
-                    </div>
-                    <div class="mb-4">
-                        {{ form.summary.label(class="form-label") }}
-                        {{ form.summary(class="form-control", rows="4") }}
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Cancel</a>
-                        {{ form.submit(class="btn btn-success") }}
-                    </div>
-                </form>
-            </div>
+<div class="max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center justify-between mb-6 pb-2 gap-3">
+        <div class="flex items-center space-x-2 text-sm text-slate-500 font-medium">
+            <a href="{{ url_for('dashboard.index') }}" class="hover:text-blue-600 transition-colors flex items-center">
+                <span class="material-symbols-outlined text-[18px] mr-1">dashboard</span> Dashboard
+            </a>
+            <span class="text-slate-400">/</span>
+            <span class="text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full text-xs font-semibold border border-blue-100 flex items-center">
+                <span class="material-symbols-outlined text-[14px] mr-1">work</span> {{ title }}
+            </span>
         </div>
     </div>
+
+    <!-- Main Form Card -->
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Card Header Banner -->
+        <div class="bg-blue-600 px-6 sm:px-8 py-5 border-b border-blue-700/40 text-white flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white shadow-inner">
+                    <span class="material-symbols-outlined text-[24px]">work</span>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white">{{ title }}</h1>
+                    <p class="text-xs text-blue-100 mt-0.5">Customize your resume summary and role title for targeted job applications.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Body -->
+        <form method="POST" class="p-6 sm:p-8 space-y-6">
+            {{ form.hidden_tag() }}
+
+            <!-- Job Role Title Field -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700" for="role_name">
+                        Job Role Title <span class="text-red-500">*</span>
+                    </label>
+                    <span class="text-[11px] text-slate-400 font-normal">e.g. Backend Developer, Data Analyst</span>
+                </div>
+                {% set rn_err = 'border-red-400 ring-1 ring-red-400' if form.role_name.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                <input class="w-full h-11 px-4 rounded-lg bg-slate-50 text-slate-900 text-sm border {{ rn_err }} focus:bg-white focus:outline-none transition-all shadow-sm"
+                       id="role_name" 
+                       name="role_name" 
+                       placeholder="e.g. Senior Backend Developer, Machine Learning Engineer" 
+                       required 
+                       type="text" 
+                       value="{{ form.role_name.data or '' }}">
+                {% if form.role_name.errors %}
+                    <p class="text-xs text-red-500 mt-1">{% for err in form.role_name.errors %}{{ err }} {% endfor %}</p>
+                {% endif %}
+
+                <!-- Role Quick Presets -->
+                <div class="mt-2.5 flex flex-wrap items-center gap-2">
+                    <span class="text-xs font-medium text-slate-500">Popular presets:</span>
+                    <button type="button" onclick="document.getElementById('role_name').value='Full Stack Developer'" class="text-xs bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-medium px-2.5 py-1 rounded-md border border-slate-200 transition-colors">
+                        Full Stack Developer
+                    </button>
+                    <button type="button" onclick="document.getElementById('role_name').value='Backend Developer'" class="text-xs bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-medium px-2.5 py-1 rounded-md border border-slate-200 transition-colors">
+                        Backend Developer
+                    </button>
+                    <button type="button" onclick="document.getElementById('role_name').value='Frontend Engineer'" class="text-xs bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-medium px-2.5 py-1 rounded-md border border-slate-200 transition-colors">
+                        Frontend Engineer
+                    </button>
+                    <button type="button" onclick="document.getElementById('role_name').value='Data Analyst'" class="text-xs bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-medium px-2.5 py-1 rounded-md border border-slate-200 transition-colors">
+                        Data Analyst
+                    </button>
+                    <button type="button" onclick="document.getElementById('role_name').value='Product Manager'" class="text-xs bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 font-medium px-2.5 py-1 rounded-md border border-slate-200 transition-colors">
+                        Product Manager
+                    </button>
+                </div>
+            </div>
+
+            <!-- Professional Summary Field -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700" for="summary">
+                        Professional Summary <span class="text-red-500">*</span>
+                    </label>
+                    <span class="text-[11px] text-slate-400 font-normal">Recommended 3–5 tailored sentences</span>
+                </div>
+                {% set sum_err = 'border-red-400 ring-1 ring-red-400' if form.summary.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                <textarea class="w-full rounded-lg bg-slate-50 text-slate-900 text-sm border {{ sum_err }} p-4 focus:bg-white focus:outline-none transition-all shadow-sm"
+                          id="summary" 
+                          name="summary" 
+                          rows="6" 
+                          required 
+                          placeholder="Highlight your domain strengths, engineering specialties, quantified impacts, and technical proficiencies tailored specifically to this job role...">{{ form.summary.data or '' }}</textarea>
+                {% if form.summary.errors %}
+                    <p class="text-xs text-red-500 mt-1">{% for err in form.summary.errors %}{{ err }} {% endfor %}</p>
+                {% endif %}
+                <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+                    <span class="flex items-center gap-1 text-slate-500">
+                        <span class="material-symbols-outlined text-[16px] text-blue-500">info</span>
+                        <span>This summary will be tailored specifically for this role in generated resumes.</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Form Action Buttons -->
+            <div class="pt-5 border-t border-slate-100 flex items-center justify-between gap-4">
+                <a href="{{ url_for('dashboard.index') }}" class="px-6 h-11 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm flex items-center justify-center gap-2 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                    <span>Cancel</span>
+                </a>
+                <button type="submit" class="px-7 h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">save</span>
+                    <span>Save Job Role</span>
+                </button>
+            </div>
+        </form>
+    </section>
 </div>
 {% endblock %}
