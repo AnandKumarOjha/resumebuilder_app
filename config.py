@@ -19,3 +19,7 @@ class Config:
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
     STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', '')
+
+    # Resend Email Configuration
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+    RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'onboarding@resend.dev')

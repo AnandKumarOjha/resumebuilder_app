@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Reset Password - ResumeBuilder{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+    <!-- Background accents consistent with auth pages -->
+    <div class="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 -right-20 w-80 h-80 rounded-full bg-slate-200/50 blur-2xl pointer-events-none"></div>
+
+    <div class="w-full max-w-[480px] z-10">
+        <!-- Main Auth Card -->
+        <div class="bg-white shadow-xl rounded-2xl p-6 sm:p-8 flex flex-col border border-slate-100">
+            <!-- Brand & Context Header -->
+            <div class="flex flex-col items-center text-center space-y-2 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                    <span class="material-symbols-outlined text-[28px]">lock_reset</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Forgot Password</h1>
+                <p class="text-sm text-slate-500 max-w-[340px]">
+                    Enter the email associated with your account and we'll send you instructions to reset your password.
+                </p>
+            </div>
+
+            <!-- Form -->
+            <form action="{{ url_for('auth.reset_request') }}" method="POST" class="flex flex-col space-y-4" id="resetRequestForm">
+                {{ form.hidden_tag() }}
+
+                <!-- Email Field -->
+                <div class="flex flex-col space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-600" for="email">
+                        Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <span id="reset-email-icon" class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[20px] pointer-events-none transition-opacity duration-200">mail</span>
+                        {% set email_err = 'border-red-400 ring-1 ring-red-400' if form.email.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                        <input class="w-full h-11 pl-11 pr-4 bg-white rounded-lg text-slate-900 text-sm border {{ email_err }} placeholder:text-slate-400 focus:outline-none transition-all shadow-sm"
+                               id="email" 
+                               name="email" 
+                               type="email" 
+                               placeholder="name@example.com" 
+                               required 
+                               value="{{ form.email.data or '' }}"
+                               oninput="updateIcon(this, 'reset-email-icon')"
+                               onchange="updateIcon(this, 'reset-email-icon')">
+                    </div>
+                    {% if form.email.errors %}
+                        <p class="text-xs text-red-500 mt-1">{% for err in form.email.errors %}{{ err }} {% endfor %}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center space-x-2 mt-2 cursor-pointer active:scale-[0.99]">
+                    <span>Send Reset Link</span>
+                    <span class="material-symbols-outlined text-[18px]">send</span>
+                </button>
+            </form>
+
+            <!-- Back to Sign In Link -->
+            <div class="text-center pt-5 border-t border-slate-100 mt-5">
+                <p class="text-xs text-slate-500">
+                    Remembered your password? 
+                    <a href="{{ url_for('auth.login') }}" class="text-blue-600 font-semibold hover:underline ml-1">Back to Sign In</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-6 flex items-center justify-center space-x-4 text-slate-500 text-xs">
+            <div class="flex items-center space-x-1">
+                <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified_user</span>
+                <span>Bank-grade 256-bit encryption</span>
+            </div>
+            <div class="h-3 w-px bg-slate-300"></div>
+            <div class="flex items-center space-x-1">
+                <span class="material-symbols-outlined text-blue-600 text-[18px]">mark_email_read</span>
+                <span>Secure Email Delivery</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateIcon(input, iconId) {
+        const icon = document.getElementById(iconId);
+        if (!icon) return;
+        if (input.value && input.value.trim().length > 0) {
+            icon.style.opacity = '0';
+            icon.style.visibility = 'hidden';
+            input.style.paddingLeft = '0.875rem';
+        } else {
+            icon.style.opacity = '1';
+            icon.style.visibility = 'visible';
+            input.style.paddingLeft = '2.75rem';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const emailInput = document.getElementById('email');
+        if (emailInput) updateIcon(emailInput, 'reset-email-icon');
+    });
+</script>
+{% endblock %}
+

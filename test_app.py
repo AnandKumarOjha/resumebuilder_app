@@ -218,5 +218,69 @@ class ResumeBuilderTestCase(unittest.TestCase):
         db.session.refresh(user)
         self.assertTrue(user.is_premium)
 
+    def test_password_reset_flow(self):
+        # 1. Register a user
+        self.client.post('/register', data={
+            'email': 'reset_user@example.com',
+            'password': 'oldpassword123',
+            'confirm_password': 'oldpassword123'
+        }, follow_redirects=True)
+
+        user = User.query.filter_by(email='reset_user@example.com').first()
+        self.assertIsNotNone(user)
+
+        # 2. Check that the login page has 'Forgot password?' link
+        login_page = self.client.get('/login')
+        self.assertEqual(login_page.status_code, 200)
+        self.assertIn(b'Forgot password?', login_page.data)
+        self.assertIn(b'/reset-password', login_page.data)
+
+        # 3. Request reset page renders
+        req_page = self.client.get('/reset-password')
+        self.assertEqual(req_page.status_code, 200)
+        self.assertIn(b'Forgot Password', req_page.data)
+
+        # 4. Submit reset request for registered email
+        res = self.client.post('/reset-password', data={'email': 'reset_user@example.com'}, follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'An email with instructions to reset your password has been sent', res.data)
+
+        # 5. Generate a valid token for this user
+        token = user.get_reset_token()
+        self.assertIsNotNone(token)
+
+        # 6. Check reset token page renders
+        token_page = self.client.get(f'/reset-password/{token}')
+        self.assertEqual(token_page.status_code, 200)
+        self.assertIn(b'Reset Your Password', token_page.data)
+
+        # 7. Submit new password
+        res = self.client.post(f'/reset-password/{token}', data={
+            'password': 'newpassword456',
+            'confirm_password': 'newpassword456'
+        }, follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b'Your password has been updated', res.data)
+
+        # 8. Verify old password fails, new password succeeds
+        fail_login = self.client.post('/login', data={
+            'email': 'reset_user@example.com',
+            'password': 'oldpassword123'
+        }, follow_redirects=True)
+        self.assertIn(b'Login Unsuccessful', fail_login.data)
+
+        success_login = self.client.post('/login', data={
+            'email': 'reset_user@example.com',
+            'password': 'newpassword456'
+        }, follow_redirects=True)
+        self.assertEqual(success_login.status_code, 200)
+        self.assertIn(b'Student &amp; Professional Dashboard', success_login.data)
+
+        # 9. Log out, then verify invalid or tampered token redirects with warning
+        self.client.get('/logout', follow_redirects=True)
+        bad_token_res = self.client.get('/reset-password/invalid-token-xyz', follow_redirects=True)
+        self.assertEqual(bad_token_res.status_code, 200)
+        self.assertIn(b'That reset token is invalid or has expired', bad_token_res.data)
+
 if __name__ == '__main__':
     unittest.main()

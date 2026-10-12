@@ -1,6 +1,8 @@
 from app import db, login_manager
 from flask_login import UserMixin
 from datetime import datetime
+from flask import current_app
+from itsdangerous import URLSafeTimedSerializer
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -14,6 +16,20 @@ class User(db.Model, UserMixin):
     
     personal_info = db.relationship('PersonalInfo', backref='owner', uselist=False, lazy=True)
     roles = db.relationship('ResumeRole', backref='author', lazy=True)
+
+    def get_reset_token(self):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id}, salt='password-reset-salt')
+
+    @staticmethod
+    def verify_reset_token(token, max_age=1800):
+        s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token, salt='password-reset-salt', max_age=max_age)
+            user_id = data.get('user_id')
+        except Exception:
+            return None
+        return db.session.get(User, user_id)
 
 class PersonalInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)

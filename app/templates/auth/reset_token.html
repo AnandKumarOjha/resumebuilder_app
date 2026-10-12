@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Set New Password - ResumeBuilder{% endblock %}
+
+{% block content %}
+<div class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+    <!-- Background accents -->
+    <div class="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 -right-20 w-80 h-80 rounded-full bg-slate-200/50 blur-2xl pointer-events-none"></div>
+
+    <div class="w-full max-w-[480px] z-10">
+        <!-- Main Card -->
+        <div class="bg-white shadow-xl rounded-2xl p-6 sm:p-8 flex flex-col border border-slate-100">
+            <!-- Brand & Context Header -->
+            <div class="flex flex-col items-center text-center space-y-2 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                    <span class="material-symbols-outlined text-[28px]">password</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900">Reset Your Password</h1>
+                <p class="text-sm text-slate-500 max-w-[340px]">
+                    Create a strong new password for your account.
+                </p>
+            </div>
+
+            <!-- Form -->
+            <form action="" method="POST" class="flex flex-col space-y-4" id="resetPasswordForm">
+                {{ form.hidden_tag() }}
+
+                <!-- New Password Field -->
+                <div class="flex flex-col space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-600" for="password">
+                        New Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <span id="new-password-icon" class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[20px] pointer-events-none transition-opacity duration-200">lock</span>
+                        {% set pwd_err = 'border-red-400 ring-1 ring-red-400' if form.password.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                        <input class="w-full h-11 pl-11 pr-11 bg-white rounded-lg text-slate-900 text-sm border {{ pwd_err }} placeholder:text-slate-400 focus:outline-none transition-all shadow-sm"
+                               id="password" 
+                               name="password" 
+                               type="password" 
+                               placeholder="Min. 6 characters" 
+                               required 
+                               minlength="6"
+                               oninput="updateIcon(this, 'new-password-icon')"
+                               onchange="updateIcon(this, 'new-password-icon')">
+                        <button type="button" id="togglePassword" class="absolute right-3.5 text-slate-400 hover:text-slate-600 focus:outline-none flex items-center justify-center p-0.5" aria-label="Toggle password visibility">
+                            <span class="material-symbols-outlined text-[20px]" id="eyeIcon">visibility</span>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <p class="text-xs text-red-500 mt-1">{% for err in form.password.errors %}{{ err }} {% endfor %}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm New Password Field -->
+                <div class="flex flex-col space-y-1.5">
+                    <label class="text-xs font-semibold uppercase tracking-wider text-slate-600" for="confirm_password">
+                        Confirm New Password <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative flex items-center">
+                        <span id="confirm-password-icon" class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[20px] pointer-events-none transition-opacity duration-200">lock_reset</span>
+                        {% set conf_err = 'border-red-400 ring-1 ring-red-400' if form.confirm_password.errors else 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20' %}
+                        <input class="w-full h-11 pl-11 pr-4 bg-white rounded-lg text-slate-900 text-sm border {{ conf_err }} placeholder:text-slate-400 focus:outline-none transition-all shadow-sm"
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               type="password" 
+                               placeholder="Re-enter new password" 
+                               required
+                               oninput="updateIcon(this, 'confirm-password-icon')"
+                               onchange="updateIcon(this, 'confirm-password-icon')">
+                    </div>
+                    {% if form.confirm_password.errors %}
+                        <p class="text-xs text-red-500 mt-1">{% for err in form.confirm_password.errors %}{{ err }} {% endfor %}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg shadow-sm transition-all duration-200 flex items-center justify-center space-x-2 mt-4 cursor-pointer active:scale-[0.99]">
+                    <span>Reset Password</span>
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                </button>
+            </form>
+
+            <!-- Context Footer -->
+            <div class="text-center pt-5 border-t border-slate-100 mt-5">
+                <p class="text-xs text-slate-500">
+                    <a href="{{ url_for('auth.login') }}" class="text-blue-600 font-semibold hover:underline">Back to Sign In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateIcon(input, iconId) {
+        const icon = document.getElementById(iconId);
+        if (!icon) return;
+        if (input.value && input.value.trim().length > 0) {
+            icon.style.opacity = '0';
+            icon.style.visibility = 'hidden';
+            input.style.paddingLeft = '0.875rem';
+        } else {
+            icon.style.opacity = '1';
+            icon.style.visibility = 'visible';
+            input.style.paddingLeft = '2.75rem';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const pwdInput = document.getElementById('password');
+        const confInput = document.getElementById('confirm_password');
+        const toggleBtn = document.getElementById('togglePassword');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        if (pwdInput) updateIcon(pwdInput, 'new-password-icon');
+        if (confInput) updateIcon(confInput, 'confirm-password-icon');
+
+        if (toggleBtn && pwdInput && eyeIcon) {
+            toggleBtn.addEventListener('click', function() {
+                const isPassword = pwdInput.getAttribute('type') === 'password';
+                pwdInput.setAttribute('type', isPassword ? 'text' : 'password');
+                if (confInput) {
+                    confInput.setAttribute('type', isPassword ? 'text' : 'password');
+                }
+                eyeIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+            });
+        }
+    });
+</script>
+{% endblock %}
+

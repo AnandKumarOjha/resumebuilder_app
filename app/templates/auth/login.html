@@ -65,6 +65,9 @@
                         <label class="text-xs font-semibold uppercase tracking-wider text-slate-600" for="password">
                             Password <span class="text-red-500">*</span>
                         </label>
+                        <a href="{{ url_for('auth.reset_request') }}" class="text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                            Forgot password?
+                        </a>
                     </div>
                     <div class="relative flex items-center">
                         <span id="password-icon" class="material-symbols-outlined absolute left-3.5 text-slate-400 text-[20px] pointer-events-none transition-opacity duration-200">lock</span>
