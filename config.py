@@ -6,8 +6,12 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'a_very_secret_key_for_dev'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+    # Handle Render's DATABASE_URL which uses 'postgres://' (rejected by SQLAlchemy 1.4+)
+    _db_url = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(BASE_DIR, 'resume_app.db')
+    if _db_url.startswith('postgres://'):
+        _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_DATABASE_URI = _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Stripe Configuration
