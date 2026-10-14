@@ -25,6 +25,10 @@ class Config:
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
+    # Stripe Price IDs (from Stripe Dashboard Product)
+    STRIPE_PRICE_MONTHLY_ID = os.environ.get('STRIPE_PRICE_MONTHLY_ID', '')
+    STRIPE_PRICE_YEARLY_ID = os.environ.get('STRIPE_PRICE_YEARLY_ID', '')
+
     # Razorpay Configuration (Indian INR Payments)
     RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder')
     RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'placeholder_secret')
@@ -39,6 +43,7 @@ class Config:
             'billing': 'Billed monthly',
             'usd': 9.00,
             'usd_cents': 900,
+            'stripe_price_id': os.environ.get('STRIPE_PRICE_MONTHLY_ID', ''),
             'inr': 499,
             'inr_paise': 49900,
             'description': 'Unlimited ATS PDF resume exports & access to all templates for 1 month.'
@@ -51,6 +56,7 @@ class Config:
             'badge': 'BEST VALUE · SAVE 55%',
             'usd': 49.00,
             'usd_cents': 4900,
+            'stripe_price_id': os.environ.get('STRIPE_PRICE_YEARLY_ID', ''),
             'inr': 2499,
             'inr_paise': 249900,
             'savings_note_usd': 'Equivalent to just $4.08/mo',

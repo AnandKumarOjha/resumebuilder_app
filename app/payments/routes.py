@@ -88,20 +88,47 @@ def create_checkout_session():
         if role_id:
             cancel_url += f'?role_id={role_id}'
 
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
+        stripe_price_id = selected_plan.get('stripe_price_id') or current_app.config.get(f'STRIPE_PRICE_{plan_id.upper()}_ID')
+        
+        mode = 'payment'
+        if stripe_price_id and stripe_price_id.startswith('price_'):
+            try:
+                price_obj = stripe.Price.retrieve(stripe_price_id)
+                mode = 'subscription' if price_obj.get('recurring') else 'payment'
+                line_items = [{
+                    'price': stripe_price_id,
+                    'quantity': 1,
+                }]
+            except Exception:
+                # If price lookup fails (e.g. invalid key in dev), fall back to inline price data
+                line_items = [{
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': f"ResumeBuilder PRO ({selected_plan['name']})",
+                            'description': selected_plan['description'],
+                        },
+                        'unit_amount': selected_plan['usd_cents'],
+                    },
+                    'quantity': 1,
+                }]
+        else:
+            line_items = [{
                 'price_data': {
                     'currency': 'usd',
                     'product_data': {
                         'name': f"ResumeBuilder PRO ({selected_plan['name']})",
                         'description': selected_plan['description'],
                     },
-                    'unit_amount': selected_plan['usd_cents'],  # e.g. 900 ($9) or 4900 ($49)
+                    'unit_amount': selected_plan['usd_cents'],
                 },
                 'quantity': 1,
-            }],
-            mode='payment',
+            }]
+
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode=mode,
             success_url=success_url,
             cancel_url=cancel_url,
             client_reference_id=str(current_user.id),
@@ -257,18 +284,27 @@ def stripe_webhook():
         except Exception:
             return jsonify({'error': 'Invalid JSON'}), 400
 
-    if event and event.get('type') == 'checkout.session.completed':
-        session = event['data']['object']
-        user_id = session.get('client_reference_id') or (session.get('metadata') or {}).get('user_id')
-        plan_id = (session.get('metadata') or {}).get('plan', 'monthly')
+    if event and event.get('type') in ['checkout.session.completed', 'invoice.payment_succeeded']:
+        data_obj = event['data']['object']
+        user_id = data_obj.get('client_reference_id') or (data_obj.get('metadata') or {}).get('user_id')
+        plan_id = (data_obj.get('metadata') or {}).get('plan', 'monthly')
+        customer_email = data_obj.get('customer_email')
+
+        user = None
         if user_id:
-            user = db.session.get(User, int(user_id))
-            if user:
-                user.is_premium = True
-                user.plan = plan_id
-                user.payment_gateway = 'stripe'
-                user.subscription_date = datetime.utcnow()
-                db.session.commit()
+            try:
+                user = db.session.get(User, int(user_id))
+            except (ValueError, TypeError):
+                user = None
+        if not user and customer_email:
+            user = User.query.filter_by(email=customer_email).first()
+
+        if user:
+            user.is_premium = True
+            user.plan = plan_id
+            user.payment_gateway = 'stripe'
+            user.subscription_date = datetime.utcnow()
+            db.session.commit()
 
     return jsonify({'status': 'success'}), 200
 
