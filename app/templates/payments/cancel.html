@@ -1,26 +1,38 @@
 {% extends "base.html" %}
+
 {% block title %}Checkout Cancelled - ResumeBuilder{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-7 text-center">
-        <div class="card shadow-sm border-0 p-4">
-            <div class="card-body">
-                <div class="text-warning display-1 mb-3">
-                    <i class="bi bi-x-circle"></i>
-                </div>
-                <h2 class="fw-bold mb-2">Checkout Cancelled</h2>
-                <p class="text-muted fs-5 mb-4">
-                    Your transaction was cancelled. No charges were made. You can upgrade anytime to unlock unlimited PDF downloads.
-                </p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="{{ url_for('payments.upgrade', role_id=role_id) if role_id else url_for('payments.upgrade') }}" class="btn btn-warning btn-lg shadow-sm">
-                        <i class="bi bi-arrow-repeat me-1"></i> Try Upgrade Again
-                    </a>
-                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary btn-lg">
-                        Go to Dashboard
-                    </a>
-                </div>
+<div class="flex-grow flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative">
+    <!-- Background accents -->
+    <div class="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-amber-500/5 blur-3xl pointer-events-none"></div>
+
+    <div class="w-full max-w-lg z-10 text-center">
+        <div class="bg-white shadow-xl rounded-2xl p-8 border border-slate-100 flex flex-col items-center">
+            <!-- Warning / Cancel Icon -->
+            <div class="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-6 shadow-sm border border-amber-100">
+                <span class="material-symbols-outlined text-[36px]">cancel</span>
+            </div>
+
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 mb-2">
+                Checkout Incomplete
+            </h1>
+
+            <p class="text-sm text-slate-600 max-w-md mb-8 leading-relaxed">
+                Your payment was cancelled and no charges were made. You can choose a plan and upgrade whenever you are ready to export your resumes.
+            </p>
+
+            <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="{{ url_for('payments.upgrade', role_id=role_id) if role_id else url_for('payments.upgrade') }}" 
+                   class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">replay</span>
+                    <span>View Plans &amp; Try Again</span>
+                </a>
+                <a href="{{ url_for('dashboard.index') }}" 
+                   class="w-full sm:w-auto px-6 py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                    <span>Back to Dashboard</span>
+                </a>
             </div>
         </div>
     </div>

@@ -1,42 +1,90 @@
 {% extends 'base.html' %}
 
-{% block title %}Upgrade to ResumeBuilder PRO{% endblock %}
+{% block title %}Pricing & Plans - ResumeBuilder PRO{% endblock %}
+
+{% block extra_head %}
+<!-- Razorpay Checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
+<div class="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
     <!-- Header -->
-    <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold mb-3 shadow-xs">
-            <span class="material-symbols-outlined text-[16px] text-amber-600">diamond</span>
-            <span>ResumeBuilder Premium Access</span>
+    <div class="text-center mb-10">
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-3 shadow-xs">
+            <span class="material-symbols-outlined text-[16px] text-blue-600">diamond</span>
+            <span>ResumeBuilder PRO Membership</span>
         </div>
         <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
             Upgrade to ResumeBuilder PRO
         </h1>
         <p class="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto">
-            Land your dream job with professional ATS-compliant resumes customized for every role you apply to.
+            Choose the plan that fits your career search. Get unlimited ATS PDF downloads and access to all resume templates.
         </p>
+
+        <!-- Gateway / Currency Switcher (Fixed USD via Stripe vs Fixed INR via Razorpay) -->
+        {% if not current_user.is_premium %}
+        <div class="mt-8 flex flex-col items-center">
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2.5">
+                Select Payment Method / Currency
+            </div>
+            <div class="inline-flex p-1.5 bg-slate-100 rounded-2xl border border-slate-200 shadow-xs">
+                <button type="button" 
+                        id="currency-usd-btn"
+                        onclick="switchCurrency('usd')" 
+                        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm bg-white text-slate-900">
+                    <span class="text-base">🌍</span>
+                    <span>International (USD · Stripe)</span>
+                </button>
+                <button type="button" 
+                        id="currency-inr-btn"
+                        onclick="switchCurrency('inr')" 
+                        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all text-slate-600 hover:text-slate-900">
+                    <span class="text-base">🇮🇳</span>
+                    <span>India (INR · Razorpay)</span>
+                </button>
+            </div>
+            <p class="text-[12px] text-slate-500 mt-2" id="currency-hint">
+                Paying in USD via Stripe (Cards, Apple Pay, Google Pay)
+            </p>
+        </div>
+        {% endif %}
     </div>
 
     {% if current_user.is_premium %}
+        <!-- Active PRO Member Banner -->
         <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 sm:p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                    <span class="material-symbols-outlined text-[28px]">verified</span>
+                <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <span class="material-symbols-outlined text-[32px]">verified</span>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-slate-900">You are a PRO Member!</h2>
-                    <p class="text-sm text-slate-600">Your account has lifetime access to unlimited PDF downloads and all premium templates.</p>
+                    <div class="flex items-center gap-2 mb-1">
+                        <h2 class="text-xl font-bold text-slate-900">You are an Active PRO Member!</h2>
+                        {% if current_user.plan %}
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-200 text-emerald-900">
+                                {{ current_user.plan }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-slate-600">
+                        Your account has full access to unlimited ATS PDF downloads and all present and upcoming templates.
+                        {% if current_user.payment_gateway %}
+                            <span class="text-slate-500 text-xs block mt-0.5">Payment processed via {{ current_user.payment_gateway|title }}.</span>
+                        {% endif %}
+                    </p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 {% if role_id %}
-                    <a href="{{ url_for('dashboard.role_detail', role_id=role_id) }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs">
-                        Back to Role
+                    <a href="{{ url_for('dashboard.role_detail', role_id=role_id) }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">download</span>
+                        <span>Download Resume</span>
                     </a>
                 {% else %}
-                    <a href="{{ url_for('dashboard.index') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs">
-                        Go to Dashboard
+                    <a href="{{ url_for('dashboard.index') }}" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition shadow-xs flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                        <span>Go to Dashboard</span>
                     </a>
                 {% endif %}
             </div>
@@ -45,7 +93,7 @@
         <!-- Testing Controls (Dev Mode) -->
         <div class="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-5 text-center max-w-lg mx-auto">
             <small class="text-slate-500 mb-2 block font-medium">
-                Testing Controls (Dev Mode): Want to test paywall redirection again?
+                Testing Controls (Dev Mode): Reset account to test paywall redirection
             </small>
             <form action="{{ url_for('payments.dev_deactivate') }}" method="POST">
                 <button type="submit" class="px-4 py-2 border border-slate-300 hover:bg-white text-slate-700 rounded-lg text-xs font-semibold transition">
@@ -54,112 +102,340 @@
             </form>
         </div>
     {% else %}
-        <!-- Pricing Cards Comparison (Stitch 3) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-8">
-            <!-- Free Tier -->
-            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col justify-between">
+        <!-- 2 Plans: Monthly & Yearly -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-10 max-w-4xl mx-auto">
+            
+            <!-- PLAN 1: MONTHLY PLAN -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 flex flex-col justify-between hover:shadow-md transition-all">
                 <div>
-                    <h3 class="text-xl font-bold text-slate-600 mb-1">Free Plan</h3>
-                    <p class="text-xs text-slate-500 mb-6">Great for creating and organizing your role profiles.</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-extrabold text-slate-900">$0</span>
-                        <span class="text-xs text-slate-400 font-medium">/ forever</span>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-slate-900">{{ plans['monthly']['name'] }}</h3>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">Flexible</span>
                     </div>
-                    <ul class="space-y-3 text-xs sm:text-sm text-slate-600 mb-8">
-                        <li class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
-                            <span>Unlimited target role profiles</span>
+                    <p class="text-xs text-slate-500 mb-6">Ideal for active job applicants who want to prepare and apply this month.</p>
+                    
+                    <!-- Pricing Display (USD vs INR) -->
+                    <div class="mb-6">
+                        <!-- USD View -->
+                        <div class="price-usd">
+                            <span class="text-4xl font-extrabold text-slate-900">${{ "%.0f"|format(plans['monthly']['usd']) }}</span>
+                            <span class="text-xs text-slate-400 font-medium">/ month</span>
+                            <div class="text-[11px] text-slate-500 mt-1">Billed monthly · Cancel anytime</div>
+                        </div>
+                        <!-- INR View -->
+                        <div class="price-inr hidden">
+                            <span class="text-4xl font-extrabold text-slate-900">₹{{ plans['monthly']['inr'] }}</span>
+                            <span class="text-xs text-slate-400 font-medium">/ month</span>
+                            <div class="text-[11px] text-slate-500 mt-1">Fixed INR price via Razorpay</div>
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <ul class="space-y-3.5 text-xs sm:text-sm text-slate-700 mb-8 border-t border-slate-100 pt-5">
+                        <li class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
+                            <span class="font-semibold text-slate-900">Unlimited ATS PDF Downloads</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
-                            <span>Work experience &amp; education tracking</span>
+                        <li class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
+                            <span>Access to all templates (Simple ATS &amp; Modern)</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
-                            <span>Role-specific skill tagging</span>
+                        <li class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
+                            <span>Unlimited Target Job Roles &amp; Profiles</span>
                         </li>
-                        <li class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span>
-                            <span>In-browser resume preview</span>
-                        </li>
-                        <li class="flex items-center gap-2 text-slate-400">
-                            <span class="material-symbols-outlined text-red-400 text-[18px]">cancel</span>
-                            <span>Direct PDF downloads (Paywall locked)</span>
+                        <li class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
+                            <span>Print-ready A4 formatting</span>
                         </li>
                     </ul>
                 </div>
-                <button class="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-semibold text-sm cursor-not-allowed" disabled>
-                    Current Plan
-                </button>
+
+                <!-- Checkout Actions for Monthly -->
+                <div>
+                    <!-- Stripe Checkout Form (USD) -->
+                    <form action="{{ url_for('payments.create_checkout_session') }}" method="POST" class="btn-usd">
+                        <input type="hidden" name="plan" value="monthly">
+                        {% if role_id %}
+                            <input type="hidden" name="role_id" value="{{ role_id }}">
+                        {% endif %}
+                        <button type="submit" class="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+                            <span class="material-symbols-outlined text-[18px]">credit_card</span>
+                            <span>Subscribe Monthly (${{ "%.0f"|format(plans['monthly']['usd']) }})</span>
+                        </button>
+                    </form>
+
+                    <!-- Razorpay Checkout Button (INR) -->
+                    <div class="btn-inr hidden">
+                        <button type="button" 
+                                onclick="initiateRazorpay('monthly', {{ plans['monthly']['inr_paise'] }}, 'Monthly Plan (₹{{ plans['monthly']['inr'] }})')"
+                                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+                            <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                            <span>Pay with Razorpay (₹{{ plans['monthly']['inr'] }})</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- PRO Tier -->
-            <div class="bg-white rounded-2xl border-2 border-blue-600 shadow-xl p-6 sm:p-8 flex flex-col justify-between relative">
-                <div class="absolute -top-3 right-6">
-                    <span class="bg-blue-600 text-white font-bold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm">
-                        MOST POPULAR
+            <!-- PLAN 2: YEARLY PLAN (BEST VALUE) -->
+            <div class="bg-white rounded-2xl border-2 border-blue-600 shadow-xl p-6 sm:p-8 flex flex-col justify-between relative hover:shadow-2xl transition-all">
+                <div class="absolute -top-3.5 right-6">
+                    <span class="bg-blue-600 text-white font-bold text-[10px] tracking-wider uppercase px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px]">star</span>
+                        <span>BEST VALUE · SAVE 55%</span>
                     </span>
                 </div>
+
                 <div>
-                    <h3 class="text-xl font-bold text-blue-600 mb-1">PRO Unlimited</h3>
-                    <p class="text-xs text-slate-500 mb-6">Complete access to high-fidelity PDF exports for job applications.</p>
-                    <div class="mb-6">
-                        <span class="text-4xl font-extrabold text-slate-900">$9.99</span>
-                        <span class="text-xs text-slate-400 font-medium">/ one-time lifetime</span>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xl font-bold text-blue-600">{{ plans['yearly']['name'] }}</h3>
                     </div>
-                    <ul class="space-y-3 text-xs sm:text-sm text-slate-700 mb-8">
-                        <li class="flex items-center gap-2">
+                    <p class="text-xs text-slate-500 mb-6">Best for job seekers who want year-round resume tailoring &amp; template updates.</p>
+                    
+                    <!-- Pricing Display (USD vs INR) -->
+                    <div class="mb-6">
+                        <!-- USD View -->
+                        <div class="price-usd">
+                            <span class="text-4xl font-extrabold text-slate-900">${{ "%.0f"|format(plans['yearly']['usd']) }}</span>
+                            <span class="text-xs text-slate-400 font-medium">/ year</span>
+                            <div class="text-[11px] font-semibold text-emerald-600 mt-1">
+                                {{ plans['yearly']['savings_note_usd'] }} · Save over 50%
+                            </div>
+                        </div>
+                        <!-- INR View -->
+                        <div class="price-inr hidden">
+                            <span class="text-4xl font-extrabold text-slate-900">₹{{ plans['yearly']['inr'] }}</span>
+                            <span class="text-xs text-slate-400 font-medium">/ year</span>
+                            <div class="text-[11px] font-semibold text-emerald-600 mt-1">
+                                {{ plans['yearly']['savings_note_inr'] }} · Save over 58%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features -->
+                    <ul class="space-y-3.5 text-xs sm:text-sm text-slate-700 mb-8 border-t border-slate-100 pt-5">
+                        <li class="flex items-center gap-2.5">
                             <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
-                            <span class="font-semibold text-slate-900">Everything in Free plan</span>
+                            <span class="font-semibold text-slate-900">Everything in Monthly plan</span>
                         </li>
-                        <li class="flex items-center gap-2">
+                        <li class="flex items-center gap-2.5">
                             <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
-                            <span class="font-semibold text-slate-900">Unlimited ATS PDF Resume Downloads</span>
+                            <span class="font-semibold text-slate-900">1 Full Year of Unlimited PDF Downloads</span>
                         </li>
-                        <li class="flex items-center gap-2">
+                        <li class="flex items-center gap-2.5">
                             <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
-                            <span>Access to all templates (Simple ATS + Modern)</span>
+                            <span>All Present &amp; Future ATS Templates Included</span>
                         </li>
-                        <li class="flex items-center gap-2">
+                        <li class="flex items-center gap-2.5">
                             <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
-                            <span>Tailored print-ready A4 formatting</span>
+                            <span>Priority generation and cloud export</span>
                         </li>
-                        <li class="flex items-center gap-2">
+                        <li class="flex items-center gap-2.5">
                             <span class="material-symbols-outlined text-blue-600 text-[18px]">check_circle</span>
-                            <span>Priority support &amp; lifetime updates</span>
+                            <span>Best pricing guarantee (Locks in price)</span>
                         </li>
                     </ul>
                 </div>
 
+                <!-- Checkout Actions for Yearly -->
                 <div>
-                    <!-- Stripe Checkout Form -->
-                    <form action="{{ url_for('payments.create_checkout_session') }}" method="POST" class="mb-3">
+                    <!-- Stripe Checkout Form (USD) -->
+                    <form action="{{ url_for('payments.create_checkout_session') }}" method="POST" class="btn-usd">
+                        <input type="hidden" name="plan" value="yearly">
                         {% if role_id %}
                             <input type="hidden" name="role_id" value="{{ role_id }}">
                         {% endif %}
                         <button type="submit" class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
-                            <span class="material-symbols-outlined text-[20px]">credit_card</span>
-                            <span>Upgrade with Stripe ($9.99)</span>
+                            <span class="material-symbols-outlined text-[18px]">credit_card</span>
+                            <span>Get Yearly Access (${{ "%.0f"|format(plans['yearly']['usd']) }})</span>
                         </button>
                     </form>
 
-                    <!-- Instant Dev Upgrade Option for Testing/Demo -->
-                    <div class="border-t border-slate-100 pt-3 text-center">
-                        <small class="text-slate-500 block text-xs mb-1.5">
-                            <strong class="text-amber-600">Evaluation Mode:</strong> Test premium without entering credit card details:
-                        </small>
-                        <form action="{{ url_for('payments.dev_activate') }}" method="POST">
-                            {% if role_id %}
-                                <input type="hidden" name="role_id" value="{{ role_id }}">
-                            {% endif %}
-                            <button type="submit" class="w-full py-2 px-3 border border-emerald-500 text-emerald-700 hover:bg-emerald-50 rounded-lg text-xs font-semibold transition">
-                                Activate PRO Instantly (1-Click Test)
-                            </button>
-                        </form>
+                    <!-- Razorpay Checkout Button (INR) -->
+                    <div class="btn-inr hidden">
+                        <button type="button" 
+                                onclick="initiateRazorpay('yearly', {{ plans['yearly']['inr_paise'] }}, 'Yearly Plan (₹{{ plans['yearly']['inr'] }})')"
+                                class="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]">
+                            <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                            <span>Pay with Razorpay (₹{{ plans['yearly']['inr'] }})</span>
+                        </button>
                     </div>
                 </div>
+            </div>
+
+        </div>
+
+        <!-- Developer / Evaluation Mode Testing Controls -->
+        <div class="max-w-2xl mx-auto mt-8 border border-slate-200 bg-slate-50 rounded-2xl p-6 text-center">
+            <div class="flex items-center justify-center gap-2 text-amber-700 font-semibold text-xs uppercase tracking-wider mb-2">
+                <span class="material-symbols-outlined text-[18px]">bug_report</span>
+                <span>Evaluation &amp; Demo Testing Mode</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-4 max-w-md mx-auto">
+                Test the premium features instantly without entering real payment card credentials:
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <form action="{{ url_for('payments.dev_activate') }}" method="POST">
+                    <input type="hidden" name="plan" value="monthly">
+                    <input type="hidden" name="gateway" value="stripe">
+                    {% if role_id %}<input type="hidden" name="role_id" value="{{ role_id }}">{% endif %}
+                    <button type="submit" class="px-4 py-2 border border-slate-300 hover:bg-white text-slate-700 rounded-lg text-xs font-semibold transition">
+                        ⚡ Simulate Monthly (Stripe USD)
+                    </button>
+                </form>
+                <form action="{{ url_for('payments.dev_activate') }}" method="POST">
+                    <input type="hidden" name="plan" value="yearly">
+                    <input type="hidden" name="gateway" value="razorpay">
+                    {% if role_id %}<input type="hidden" name="role_id" value="{{ role_id }}">{% endif %}
+                    <button type="submit" class="px-4 py-2 border border-emerald-500 text-emerald-700 hover:bg-emerald-50 rounded-lg text-xs font-semibold transition">
+                        ⚡ Simulate Yearly (Razorpay INR)
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="mt-12 flex flex-wrap items-center justify-center gap-6 text-slate-500 text-xs">
+            <div class="flex items-center space-x-1.5">
+                <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified_user</span>
+                <span>256-bit SSL Secure Checkout</span>
+            </div>
+            <div class="h-3 w-px bg-slate-300 hidden sm:block"></div>
+            <div class="flex items-center space-x-1.5">
+                <span class="material-symbols-outlined text-blue-600 text-[18px]">bolt</span>
+                <span>Instant Account Activation</span>
+            </div>
+            <div class="h-3 w-px bg-slate-300 hidden sm:block"></div>
+            <div class="flex items-center space-x-1.5">
+                <span class="material-symbols-outlined text-slate-600 text-[18px]">autorenew</span>
+                <span>Cancel Anytime</span>
             </div>
         </div>
     {% endif %}
 </div>
+
+<script>
+    // Currency / Gateway Switcher Logic
+    let currentCurrency = 'usd';
+
+    function switchCurrency(curr) {
+        currentCurrency = curr;
+        const usdBtn = document.getElementById('currency-usd-btn');
+        const inrBtn = document.getElementById('currency-inr-btn');
+        const hint = document.getElementById('currency-hint');
+
+        const usdPrices = document.querySelectorAll('.price-usd');
+        const inrPrices = document.querySelectorAll('.price-inr');
+        const usdButtons = document.querySelectorAll('.btn-usd');
+        const inrButtons = document.querySelectorAll('.btn-inr');
+
+        if (curr === 'inr') {
+            // INR / Razorpay Active
+            usdBtn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm', 'font-semibold');
+            usdBtn.classList.add('text-slate-600', 'font-medium');
+
+            inrBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm', 'font-semibold');
+            inrBtn.classList.remove('text-slate-600', 'font-medium');
+
+            usdPrices.forEach(el => el.classList.add('hidden'));
+            inrPrices.forEach(el => el.classList.remove('hidden'));
+
+            usdButtons.forEach(el => el.classList.add('hidden'));
+            inrButtons.forEach(el => el.classList.remove('hidden'));
+
+            if (hint) hint.textContent = 'Paying in INR via Razorpay (UPI, Google Pay, PhonePe, Cards, NetBanking)';
+        } else {
+            // USD / Stripe Active
+            inrBtn.classList.remove('bg-white', 'text-slate-900', 'shadow-sm', 'font-semibold');
+            inrBtn.classList.add('text-slate-600', 'font-medium');
+
+            usdBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm', 'font-semibold');
+            usdBtn.classList.remove('text-slate-600', 'font-medium');
+
+            inrPrices.forEach(el => el.classList.add('hidden'));
+            usdPrices.forEach(el => el.classList.remove('hidden'));
+
+            inrButtons.forEach(el => el.classList.add('hidden'));
+            usdButtons.forEach(el => el.classList.remove('hidden'));
+
+            if (hint) hint.textContent = 'Paying in USD via Stripe (Credit/Debit Cards, Apple Pay, Google Pay)';
+        }
+    }
+
+    // Razorpay Integration
+    async function initiateRazorpay(plan, amountPaise, planDescription) {
+        const roleId = {{ role_id|default('null') }};
+        
+        try {
+            const resp = await fetch('{{ url_for("payments.razorpay_create_order") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    plan: plan,
+                    role_id: roleId
+                })
+            });
+            
+            const data = await resp.json();
+            
+            if (data.status !== 'success') {
+                alert(data.message || 'Unable to initialize Razorpay checkout. If evaluating in dev, please use the Dev Test Upgrade below.');
+                return;
+            }
+
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: data.currency,
+                name: 'ResumeBuilder PRO',
+                description: planDescription,
+                order_id: data.order_id,
+                prefill: {
+                    name: data.user_name,
+                    email: data.user_email
+                },
+                theme: {
+                    color: '#2563eb'
+                },
+                handler: async function (response) {
+                    // Send signature to verification endpoint
+                    const verifyResp = await fetch('{{ url_for("payments.razorpay_verify") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            plan: plan,
+                            role_id: roleId
+                        })
+                    });
+
+                    const verifyData = await verifyResp.json();
+                    if (verifyData.status === 'success') {
+                        window.location.href = verifyData.redirect_url;
+                    } else {
+                        alert(verifyData.message || 'Verification failed. Please contact support.');
+                    }
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response){
+                alert('Payment Failed: ' + (response.error.description || 'Transaction cancelled.'));
+            });
+            rzp.open();
+
+        } catch (err) {
+            console.error('Razorpay Error:', err);
+            alert('Error initiating Razorpay checkout: ' + err.message);
+        }
+    }
+</script>
 {% endblock %}

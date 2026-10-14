@@ -13,6 +13,9 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(60), nullable=False)
     is_premium = db.Column(db.Boolean, default=False)
+    plan = db.Column(db.String(20), nullable=True)  # 'monthly', 'yearly'
+    payment_gateway = db.Column(db.String(20), nullable=True)  # 'stripe', 'razorpay', 'dev'
+    subscription_date = db.Column(db.DateTime, nullable=True)
     
     personal_info = db.relationship('PersonalInfo', backref='owner', uselist=False, lazy=True)
     roles = db.relationship('ResumeRole', backref='author', lazy=True)

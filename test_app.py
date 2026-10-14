@@ -282,5 +282,87 @@ class ResumeBuilderTestCase(unittest.TestCase):
         self.assertEqual(bad_token_res.status_code, 200)
         self.assertIn(b'That reset token is invalid or has expired', bad_token_res.data)
 
+    def test_dual_gateways_and_plans(self):
+        # Register and login
+        self.register_and_login(email='plans_user@example.com')
+        user = User.query.filter_by(email='plans_user@example.com').first()
+        self.assertFalse(user.is_premium)
+
+        # 1. View upgrade page: check both Monthly & Yearly plans and Stripe & Razorpay references
+        upgrade_page = self.client.get('/payment/upgrade')
+        self.assertEqual(upgrade_page.status_code, 200)
+        self.assertIn(b'Monthly Plan', upgrade_page.data)
+        self.assertIn(b'Yearly Plan', upgrade_page.data)
+        self.assertIn(b'Stripe', upgrade_page.data)
+        self.assertIn(b'Razorpay', upgrade_page.data)
+        # Fixed pricing presence
+        self.assertIn(b'$9', upgrade_page.data)
+        self.assertIn(b'$49', upgrade_page.data)
+        self.assertIn(b'499', upgrade_page.data)
+        self.assertIn(b'2499', upgrade_page.data)
+
+        # 2. Test Dev Activate with Monthly plan via Stripe
+        res = self.client.post('/payment/dev-activate', data={'plan': 'monthly', 'gateway': 'stripe'}, follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        db.session.refresh(user)
+        self.assertTrue(user.is_premium)
+        self.assertEqual(user.plan, 'monthly')
+        self.assertEqual(user.payment_gateway, 'stripe')
+
+        # 3. Test Dev Deactivate
+        self.client.post('/payment/dev-deactivate', follow_redirects=True)
+        db.session.refresh(user)
+        self.assertFalse(user.is_premium)
+        self.assertIsNone(user.plan)
+
+        # 4. Test Razorpay Webhook with Yearly plan
+        razorpay_payload = {
+            'event': 'order.paid',
+            'payload': {
+                'payment': {
+                    'entity': {
+                        'id': 'pay_test123',
+                        'amount': 249900,
+                        'currency': 'INR',
+                        'notes': {
+                            'user_id': str(user.id),
+                            'plan': 'yearly'
+                        }
+                    }
+                }
+            }
+        }
+        res_rzp = self.client.post('/payment/razorpay/webhook', json=razorpay_payload)
+        self.assertEqual(res_rzp.status_code, 200)
+        db.session.refresh(user)
+        self.assertTrue(user.is_premium)
+        self.assertEqual(user.plan, 'yearly')
+        self.assertEqual(user.payment_gateway, 'razorpay')
+
+        # 5. Test Stripe Webhook with metadata plan
+        self.client.post('/payment/dev-deactivate', follow_redirects=True)
+        db.session.refresh(user)
+        self.assertFalse(user.is_premium)
+
+        stripe_payload = {
+            'type': 'checkout.session.completed',
+            'data': {
+                'object': {
+                    'client_reference_id': str(user.id),
+                    'customer_email': user.email,
+                    'metadata': {
+                        'user_id': str(user.id),
+                        'plan': 'monthly'
+                    }
+                }
+            }
+        }
+        res_stripe = self.client.post('/payment/webhook', json=stripe_payload)
+        self.assertEqual(res_stripe.status_code, 200)
+        db.session.refresh(user)
+        self.assertTrue(user.is_premium)
+        self.assertEqual(user.plan, 'monthly')
+        self.assertEqual(user.payment_gateway, 'stripe')
+
 if __name__ == '__main__':
     unittest.main()

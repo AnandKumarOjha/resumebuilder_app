@@ -20,11 +20,44 @@ class Config:
         'pool_recycle': 300,
     }
 
-    # Stripe Configuration
+    # Stripe Configuration (International USD Payments)
     STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', 'pk_test_placeholder')
     STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder')
     STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
-    STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID', '')
+
+    # Razorpay Configuration (Indian INR Payments)
+    RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder')
+    RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'placeholder_secret')
+    RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
+
+    # Fixed Plan Pricing (No runtime conversion)
+    PLANS = {
+        'monthly': {
+            'id': 'monthly',
+            'name': 'Monthly Plan',
+            'period': '/ month',
+            'billing': 'Billed monthly',
+            'usd': 9.00,
+            'usd_cents': 900,
+            'inr': 499,
+            'inr_paise': 49900,
+            'description': 'Unlimited ATS PDF resume exports & access to all templates for 1 month.'
+        },
+        'yearly': {
+            'id': 'yearly',
+            'name': 'Yearly Plan',
+            'period': '/ year',
+            'billing': 'Billed annually',
+            'badge': 'BEST VALUE · SAVE 55%',
+            'usd': 49.00,
+            'usd_cents': 4900,
+            'inr': 2499,
+            'inr_paise': 249900,
+            'savings_note_usd': 'Equivalent to just $4.08/mo',
+            'savings_note_inr': 'Equivalent to just ₹208/mo',
+            'description': 'Full 1-year unlimited access with all present and upcoming templates.'
+        }
+    }
 
     # Resend Email Configuration
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')

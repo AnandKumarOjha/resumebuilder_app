@@ -1,29 +1,61 @@
 {% extends "base.html" %}
+
 {% block title %}Payment Successful - ResumeBuilder PRO{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-7 text-center">
-        <div class="card shadow-sm border-0 p-4">
-            <div class="card-body">
-                <div class="text-success display-1 mb-3">
-                    <i class="bi bi-patch-check-fill"></i>
+<div class="flex-grow flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative">
+    <!-- Background accents -->
+    <div class="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-10 -right-20 w-80 h-80 rounded-full bg-blue-500/5 blur-2xl pointer-events-none"></div>
+
+    <div class="w-full max-w-lg z-10 text-center">
+        <div class="bg-white shadow-xl rounded-2xl p-8 border border-slate-100 flex flex-col items-center">
+            <!-- Success Icon -->
+            <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-6 shadow-sm border border-emerald-100">
+                <span class="material-symbols-outlined text-[36px]">verified</span>
+            </div>
+
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 mb-2">
+                Welcome to ResumeBuilder PRO!
+            </h1>
+
+            <p class="text-sm text-slate-600 max-w-md mb-6 leading-relaxed">
+                Your payment was successfully confirmed via <strong class="text-slate-800">{{ gateway|title }}</strong>.
+                {% if plan_id %}
+                    You have unlocked the <strong class="text-slate-800">{{ plan_id|title }} Plan</strong> with unlimited ATS PDF downloads and all premium templates.
+                {% else %}
+                    You have unlocked full PRO membership with unlimited ATS PDF downloads.
+                {% endif %}
+            </p>
+
+            <div class="w-full bg-slate-50 border border-slate-200/80 rounded-xl p-4 mb-6 text-left">
+                <div class="flex items-center justify-between text-xs py-1 border-b border-slate-200/60">
+                    <span class="text-slate-500">Account Status</span>
+                    <span class="font-bold text-emerald-600 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">check_circle</span> PRO Active
+                    </span>
                 </div>
-                <h2 class="fw-bold mb-2">Welcome to ResumeBuilder PRO!</h2>
-                <p class="text-muted fs-5 mb-4">
-                    Your payment was successful and your account has been upgraded with lifetime unlimited PDF downloads.
-                </p>
-                <div class="d-flex justify-content-center gap-3">
-                    {% if role_id %}
-                        <a href="{{ url_for('dashboard.role_detail', role_id=role_id) }}" class="btn btn-primary btn-lg shadow-sm">
-                            <i class="bi bi-file-earmark-pdf me-1"></i> Return &amp; Download Resume
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-lg shadow-sm">
-                            <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
-                        </a>
-                    {% endif %}
+                <div class="flex items-center justify-between text-xs py-1 border-b border-slate-200/60">
+                    <span class="text-slate-500">Selected Plan</span>
+                    <span class="font-semibold text-slate-800">{{ (plan_id or 'Monthly')|title }}</span>
                 </div>
+                <div class="flex items-center justify-between text-xs py-1">
+                    <span class="text-slate-500">Payment Gateway</span>
+                    <span class="font-semibold text-slate-800">{{ gateway|title }}</span>
+                </div>
+            </div>
+
+            <div class="w-full flex flex-col sm:flex-row items-center justify-center gap-3">
+                {% if role_id %}
+                    <a href="{{ url_for('dashboard.role_detail', role_id=role_id) }}" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">file_download</span>
+                        <span>Download Resume PDF</span>
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('dashboard.index') }}" class="w-full sm:w-auto px-6 py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                    <span>Go to Dashboard</span>
+                </a>
             </div>
         </div>
     </div>
