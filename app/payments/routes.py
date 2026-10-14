@@ -125,8 +125,10 @@ def create_checkout_session():
                 'quantity': 1,
             }]
 
+        # Use Stripe Dynamic Payment Methods (managed directly via Stripe Dashboard)
+        # By omitting payment_method_types, Stripe automatically displays and optimizes
+        # Cards, Apple Pay, Google Pay, Link, and localized payment methods based on customer context.
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
             line_items=line_items,
             mode=mode,
             success_url=success_url,
