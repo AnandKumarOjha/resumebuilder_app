@@ -34,6 +34,10 @@ class Config:
     RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'placeholder_secret')
     RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', '')
 
+    # Razorpay Plan IDs (from Razorpay Dashboard Subscriptions/Plans)
+    RAZORPAY_PLAN_MONTHLY_ID = os.environ.get('RAZORPAY_PLAN_MONTHLY_ID', '')
+    RAZORPAY_PLAN_YEARLY_ID = os.environ.get('RAZORPAY_PLAN_YEARLY_ID', '')
+
     # Fixed Plan Pricing (No runtime conversion)
     PLANS = {
         'monthly': {
@@ -46,6 +50,7 @@ class Config:
             'stripe_price_id': os.environ.get('STRIPE_PRICE_MONTHLY_ID', ''),
             'inr': 499,
             'inr_paise': 49900,
+            'razorpay_plan_id': os.environ.get('RAZORPAY_PLAN_MONTHLY_ID', ''),
             'description': 'Unlimited ATS PDF resume exports & access to all templates for 1 month.'
         },
         'yearly': {
@@ -59,6 +64,7 @@ class Config:
             'stripe_price_id': os.environ.get('STRIPE_PRICE_YEARLY_ID', ''),
             'inr': 2499,
             'inr_paise': 249900,
+            'razorpay_plan_id': os.environ.get('RAZORPAY_PLAN_YEARLY_ID', ''),
             'savings_note_usd': 'Equivalent to just $4.08/mo',
             'savings_note_inr': 'Equivalent to just ₹208/mo',
             'description': 'Full 1-year unlimited access with all present and upcoming templates.'

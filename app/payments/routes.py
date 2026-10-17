@@ -154,7 +154,7 @@ def create_checkout_session():
 @login_required
 def razorpay_create_order():
     """
-    Creates a Razorpay Order for either Monthly or Yearly plan in INR.
+    Creates a Razorpay Order (or Subscription if Plan ID configured) for either Monthly or Yearly plan in INR.
     Uses fixed INR pricing (no runtime conversion).
     """
     data = request.get_json(silent=True) or request.form
@@ -177,30 +177,63 @@ def razorpay_create_order():
     
     try:
         client = razorpay.Client(auth=(key_id, key_secret))
-        order_receipt = f"rb_u{current_user.id}_{int(time.time())}"
-        order_data = {
-            'amount': selected_plan['inr_paise'],  # e.g. 49900 (₹499) or 249900 (₹2,499)
-            'currency': 'INR',
-            'receipt': order_receipt,
-            'notes': {
-                'user_id': str(current_user.id),
-                'plan': plan_id,
-                'role_id': str(role_id) if role_id else '',
-                'user_email': current_user.email
+        razorpay_plan_id = selected_plan.get('razorpay_plan_id') or current_app.config.get(f'RAZORPAY_PLAN_{plan_id.upper()}_ID')
+
+        # If a Razorpay Plan ID is configured, create a Subscription
+        if razorpay_plan_id and razorpay_plan_id.startswith('plan_'):
+            total_count = 12 if plan_id == 'monthly' else 5
+            sub_data = {
+                'plan_id': razorpay_plan_id,
+                'total_count': total_count,
+                'quantity': 1,
+                'customer_notify': 1,
+                'notes': {
+                    'user_id': str(current_user.id),
+                    'plan': plan_id,
+                    'role_id': str(role_id) if role_id else '',
+                    'user_email': current_user.email
+                }
             }
-        }
-        order = client.order.create(data=order_data)
-        return jsonify({
-            'status': 'success',
-            'order_id': order['id'],
-            'amount': order['amount'],
-            'currency': 'INR',
-            'key': key_id,
-            'plan': plan_id,
-            'plan_name': selected_plan['name'],
-            'user_name': current_user.email.split('@')[0],
-            'user_email': current_user.email
-        })
+            subscription = client.subscription.create(data=sub_data)
+            return jsonify({
+                'status': 'success',
+                'type': 'subscription',
+                'subscription_id': subscription['id'],
+                'amount': selected_plan['inr_paise'],
+                'currency': 'INR',
+                'key': key_id,
+                'plan': plan_id,
+                'plan_name': selected_plan['name'],
+                'user_name': current_user.email.split('@')[0],
+                'user_email': current_user.email
+            })
+        else:
+            # Create a standard Razorpay Order for package duration
+            order_receipt = f"rb_u{current_user.id}_{int(time.time())}"
+            order_data = {
+                'amount': selected_plan['inr_paise'],  # e.g. 49900 (₹499) or 249900 (₹2,499)
+                'currency': 'INR',
+                'receipt': order_receipt,
+                'notes': {
+                    'user_id': str(current_user.id),
+                    'plan': plan_id,
+                    'role_id': str(role_id) if role_id else '',
+                    'user_email': current_user.email
+                }
+            }
+            order = client.order.create(data=order_data)
+            return jsonify({
+                'status': 'success',
+                'type': 'order',
+                'order_id': order['id'],
+                'amount': order['amount'],
+                'currency': 'INR',
+                'key': key_id,
+                'plan': plan_id,
+                'plan_name': selected_plan['name'],
+                'user_name': current_user.email.split('@')[0],
+                'user_email': current_user.email
+            })
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -209,29 +242,38 @@ def razorpay_create_order():
 def razorpay_verify():
     """
     Verifies Razorpay payment signature after successful completion on client.
+    Supports both Order and Subscription signatures.
     Upgrades user account to PRO.
     """
     data = request.get_json(silent=True) or request.form
     order_id = data.get('razorpay_order_id')
     payment_id = data.get('razorpay_payment_id')
     signature = data.get('razorpay_signature')
+    subscription_id = data.get('razorpay_subscription_id')
     plan_id = data.get('plan', 'monthly')
     role_id = data.get('role_id')
 
     key_id = current_app.config.get('RAZORPAY_KEY_ID')
     key_secret = current_app.config.get('RAZORPAY_KEY_SECRET')
 
-    if not (order_id and payment_id and signature):
+    if not payment_id or not signature or not (order_id or subscription_id):
         flash('Payment verification failed: missing payment details.', 'danger')
         return redirect(url_for('payments.upgrade', role_id=role_id))
 
     try:
         client = razorpay.Client(auth=(key_id, key_secret))
-        client.utility.verify_payment_signature({
-            'razorpay_order_id': order_id,
-            'razorpay_payment_id': payment_id,
-            'razorpay_signature': signature
-        })
+        if subscription_id:
+            client.utility.verify_subscription_payment_signature({
+                'razorpay_subscription_id': subscription_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            })
+        else:
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            })
 
         # Upgrade User
         user = db.session.get(User, current_user.id)
@@ -331,13 +373,17 @@ def razorpay_webhook():
     try:
         data = request.get_json(force=True)
         event = data.get('event')
-        if event in ['order.paid', 'payment.captured']:
-            payment_entity = data.get('payload', {}).get('payment', {}).get('entity', {})
-            notes = payment_entity.get('notes', {})
+        if event in ['order.paid', 'payment.captured', 'subscription.charged', 'subscription.activated']:
+            payload_data = data.get('payload', {})
+            entity = (payload_data.get('payment', {}) or payload_data.get('subscription', {})).get('entity', {})
+            notes = entity.get('notes', {})
             user_id = notes.get('user_id')
             plan_id = notes.get('plan', 'monthly')
             if user_id:
-                user = db.session.get(User, int(user_id))
+                try:
+                    user = db.session.get(User, int(user_id))
+                except (ValueError, TypeError):
+                    user = None
                 if user:
                     user.is_premium = True
                     user.plan = plan_id

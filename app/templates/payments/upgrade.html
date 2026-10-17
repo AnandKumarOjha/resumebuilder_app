@@ -392,7 +392,6 @@
                 currency: data.currency,
                 name: 'ResumeBuilder PRO',
                 description: planDescription,
-                order_id: data.order_id,
                 prefill: {
                     name: data.user_name,
                     email: data.user_email
@@ -401,6 +400,19 @@
                     color: '#2563eb'
                 },
                 handler: async function (response) {
+                    const verifyPayload = {
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        plan: plan,
+                        role_id: roleId
+                    };
+                    if (response.razorpay_order_id) {
+                        verifyPayload.razorpay_order_id = response.razorpay_order_id;
+                    }
+                    if (response.razorpay_subscription_id) {
+                        verifyPayload.razorpay_subscription_id = response.razorpay_subscription_id;
+                    }
+
                     // Send signature to verification endpoint
                     const verifyResp = await fetch('{{ url_for("payments.razorpay_verify") }}', {
                         method: 'POST',
@@ -408,13 +420,7 @@
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
                         },
-                        body: JSON.stringify({
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                            plan: plan,
-                            role_id: roleId
-                        })
+                        body: JSON.stringify(verifyPayload)
                     });
 
                     const verifyData = await verifyResp.json();
@@ -425,6 +431,13 @@
                     }
                 }
             };
+
+            // Attach subscription_id if recurring subscription, or order_id if package order
+            if (data.type === 'subscription' && data.subscription_id) {
+                options.subscription_id = data.subscription_id;
+            } else {
+                options.order_id = data.order_id;
+            }
 
             const rzp = new Razorpay(options);
             rzp.on('payment.failed', function (response){
